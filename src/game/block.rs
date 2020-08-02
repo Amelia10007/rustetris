@@ -75,6 +75,12 @@ impl ControlledBlock {
         Self { block, left_top }
     }
 
+    /// このブロックに含まれるセルおよびフィールドにおけるその位置をを列挙する．
+    /// # Returns
+    /// このブロックに含まれるセルと，フィールドにおけるその位置を`(pos, cell)`として列挙する`Iterator`．
+    /// イテレータはまず最上段の左端のセルを返し，以降その右隣のセルを返し続ける．
+    /// 最上段のセルをすべて列挙し終えたら，次はひとつ下の段にあるセルを左端から列挙する．
+    /// イテレータは，最下段のセルまで以上の操作を繰り返し行う．
     pub fn iter_pos_and_cell(&self) -> impl Iterator<Item = (Pos, &'_ Cell)> + '_ {
         self.block
             .cells
