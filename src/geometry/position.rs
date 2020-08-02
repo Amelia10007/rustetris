@@ -36,6 +36,14 @@ impl Add<MoveX> for PositionX {
     }
 }
 
+impl Sub for PositionX {
+    type Output = MoveX;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        MoveX(self.right_shift - rhs.right_shift)
+    }
+}
+
 /// x方向の移動量を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MoveX(Shift);
@@ -87,6 +95,14 @@ impl Add<MoveY> for PositionY {
     }
 }
 
+impl Sub for PositionY {
+    type Output = MoveY;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        MoveY(self.below_shift - rhs.below_shift)
+    }
+}
+
 /// y方向の移動量を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MoveY(Shift);
@@ -133,6 +149,16 @@ impl<T: Into<Movement>> Add<T> for Position {
         let x = self.0 + rhs.0;
         let y = self.1 + rhs.1;
         Self(x, y)
+    }
+}
+
+impl Sub for Position {
+    type Output = Movement;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let x = self.0 - rhs.0;
+        let y = self.1 - rhs.1;
+        Movement(x, y)
     }
 }
 
@@ -206,7 +232,7 @@ pub const fn above(shift: Shift) -> MoveY {
 }
 
 #[cfg(test)]
-mod tests_cell_x {
+mod tests_position_x {
     use super::*;
 
     #[test]
@@ -231,10 +257,27 @@ mod tests_cell_x {
     fn test_add() {
         assert_eq!(9, (PositionX::origin() + right(9)).right_shift);
     }
+
+    #[test]
+    fn test_sub() {
+        let p1 = PositionX::origin() + right(10);
+        let p2 = PositionX::origin() + right(5);
+        assert_eq!(right(5), p1 - p2);
+    }
 }
 
 #[cfg(test)]
-mod tests_cell_y {
+mod tests_move_x {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        assert_eq!(right(5), right(2) + right(3));
+    }
+}
+
+#[cfg(test)]
+mod tests_position_y {
     use super::*;
 
     #[test]
@@ -258,6 +301,23 @@ mod tests_cell_y {
     #[test]
     fn test_add() {
         assert_eq!(9, (PositionY::origin() + below(9)).below_shift);
+    }
+
+    #[test]
+    fn test_sub() {
+        let p1 = PositionY::origin() + below(10);
+        let p2 = PositionY::origin() + below(5);
+        assert_eq!(below(5), p1 - p2);
+    }
+}
+
+#[cfg(test)]
+mod tests_move_y {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        assert_eq!(below(5), below(2) + below(3));
     }
 }
 
