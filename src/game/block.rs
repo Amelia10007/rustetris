@@ -61,14 +61,44 @@ impl Block {
     }
 }
 
+/// フィールド内でエージェントの操作に応じて移動可能なブロックを表す．
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ControlledBlock {
+    /// ブロックの形状．
     block: Block,
+    /// フィールドにおける，ブロックの左上セルの座標．
     left_top: Position,
 }
 
+impl ControlledBlock {
+    pub const fn new(block: Block, left_top: Position) -> ControlledBlock {
+        Self { block, left_top }
+    }
+
+    pub fn iter_position_and_cell(&self) -> impl Iterator<Item = (Position, &'_ Cell)> + '_ {
+        self.block
+            .cells
+            .iter_row()
+            .enumerate()
+            .flat_map(move |(y, row)| {
+                row.iter().enumerate().map(move |(x, cell)| {
+                    let p = self.left_top + Movement(right(x as i8), below(y as i8));
+                    (p, cell)
+                })
+            })
+    }
+
+    pub fn turn_clockwise(&self) -> ControlledBlock {
+        unimplemented!()
+    }
+
+    pub fn turn_unticlockwise(&self) -> ControlledBlock {
+        unimplemented!()
+    }
+}
+
 #[cfg(test)]
-mod block_tests {
+mod tests_block {
     use super::*;
     use Cell::*;
 
@@ -181,5 +211,43 @@ mod block_tests {
             BigBombPart,
         ]]));
         verify_unticlockwise(bar_block);
+    }
+}
+
+#[cfg(test)]
+mod tests_controlled_block {
+    use super::*;
+    use Cell::*;
+
+    #[test]
+    fn test_iter_position_and_cell() {
+        let controlled_block = {
+            let block = Block::new(RowMajorTable::from_lines(vec![
+                vec![Normal, Bomb],
+                vec![BigBombUpperLeft, BigBombPart],
+            ]));
+            let left_top_position = Position(
+                PositionX::origin() + right(1),
+                PositionY::origin() + below(2),
+            );
+            ControlledBlock::new(block, left_top_position)
+        };
+
+        let mut iter = controlled_block.iter_position_and_cell();
+
+        let (p, c) = iter.next().unwrap();
+        assert_eq!(Position(PositionX::right(1), PositionY::below(2)), p);
+        assert_eq!(&Cell::Normal, c);
+        let (p, c) = iter.next().unwrap();
+        assert_eq!(Position(PositionX::right(2), PositionY::below(2)), p);
+        assert_eq!(&Cell::Bomb, c);
+        let (p, c) = iter.next().unwrap();
+        assert_eq!(Position(PositionX::right(1), PositionY::below(3)), p);
+        assert_eq!(&Cell::BigBombUpperLeft, c);
+        let (p, c) = iter.next().unwrap();
+        assert_eq!(Position(PositionX::right(2), PositionY::below(3)), p);
+        assert_eq!(&Cell::BigBombPart, c);
+
+        assert!(iter.next().is_none());
     }
 }
