@@ -285,7 +285,7 @@ impl<T: fmt::Display> fmt::Display for RowMajorTable<T> {
 }
 
 impl<'a, T> TableRowIter<'a, T> {
-    fn new(table: &'a RowMajorTable<T>) -> TableRowIter<'a, T> {
+    const fn new(table: &'a RowMajorTable<T>) -> TableRowIter<'a, T> {
         Self {
             table,
             current_row: 0,
@@ -342,7 +342,7 @@ impl<'a, T> Iterator for TableRowIterMut<'a, T> {
 }
 
 impl<'a, T> TableColumnIter<'a, T> {
-    fn new(table: &'a RowMajorTable<T>) -> TableColumnIter<'a, T> {
+    const fn new(table: &'a RowMajorTable<T>) -> TableColumnIter<'a, T> {
         Self {
             table,
             current_column: 0,
@@ -364,7 +364,7 @@ impl<'a, T> Iterator for TableColumnIter<'a, T> {
 }
 
 impl<'a, T> TableColumnIterItem<'a, T> {
-    fn new(table: &'a RowMajorTable<T>, column: usize) -> TableColumnIterItem<'a, T> {
+    const fn new(table: &'a RowMajorTable<T>, column: usize) -> TableColumnIterItem<'a, T> {
         Self {
             table,
             column,
