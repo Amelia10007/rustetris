@@ -6,34 +6,34 @@ pub type Shift = i8;
 
 /// x方向に一次元の長さをもつ格子の座標を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct PositionX {
+pub struct PosX {
     /// 原点からこの点までの，右方向を正とした距離．
     pub right_shift: Shift,
 }
 
-impl PositionX {
+impl PosX {
     /// 原点の座標を返す．
-    pub const fn origin() -> PositionX {
+    pub const fn origin() -> PosX {
         Self { right_shift: 0 }
     }
 
     /// 原点から右向き正方向に指定した距離だけ離れた点を返す．
-    /// このメソッドは，`PositionX::origin() + right(right_shift)`と同じ結果を返す．
-    pub const fn right(right_shift: Shift) -> PositionX {
+    /// このメソッドは，`PosX::origin() + right(right_shift)`と同じ結果を返す．
+    pub const fn right(right_shift: Shift) -> PosX {
         Self { right_shift }
     }
 
     /// この点の，右向き正とした場合の原点からの位置を返す．
     /// # Returns
-    /// 1. この点が原点または正の座標に存在する場合は`Some(position)`を返す．
+    /// 1. この点が原点または正の座標に存在する場合は`Some(pos)`を返す．
     /// 1. この点が負の座標に存在する場合は`None`を返す．
     pub fn as_positive_index(&self) -> Option<usize> {
         self.right_shift.try_into().ok()
     }
 }
 
-impl Add<MoveX> for PositionX {
-    type Output = PositionX;
+impl Add<MoveX> for PosX {
+    type Output = PosX;
 
     fn add(self, rhs: MoveX) -> Self::Output {
         Self {
@@ -42,7 +42,7 @@ impl Add<MoveX> for PositionX {
     }
 }
 
-impl Sub for PositionX {
+impl Sub for PosX {
     type Output = MoveX;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -72,32 +72,32 @@ impl Sub for MoveX {
 
 /// y方向に一次元の長さをもつ格子の座標を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct PositionY {
+pub struct PosY {
     /// 原点からこの点までの，下方向を正とした距離．
     pub below_shift: Shift,
 }
 
-impl PositionY {
-    pub const fn origin() -> PositionY {
+impl PosY {
+    pub const fn origin() -> PosY {
         Self { below_shift: 0 }
     }
 
     /// 原点から下向き正方向に指定した距離だけ離れた点を返す．
-    /// このメソッドは，`PositionY::origin() + below(below_shift)`と同じ結果を返す．
-    pub const fn below(below_shift: Shift) -> PositionY {
+    /// このメソッドは，`PosY::origin() + below(below_shift)`と同じ結果を返す．
+    pub const fn below(below_shift: Shift) -> PosY {
         Self { below_shift }
     }
 
     /// この点の，下向き正とした場合の原点からの位置を返す．
     /// # Returns
-    /// 1. この点が原点または正の座標に存在する場合は`Some(position)`を返す．
+    /// 1. この点が原点または正の座標に存在する場合は`Some(pos)`を返す．
     /// 1. この点が負の座標に存在する場合は`None`を返す．
     pub fn as_positive_index(&self) -> Option<usize> {
         self.below_shift.try_into().ok()
     }
 }
 
-impl Add<MoveY> for PositionY {
+impl Add<MoveY> for PosY {
     type Output = Self;
 
     fn add(self, rhs: MoveY) -> Self::Output {
@@ -107,7 +107,7 @@ impl Add<MoveY> for PositionY {
     }
 }
 
-impl Sub for PositionY {
+impl Sub for PosY {
     type Output = MoveY;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -137,23 +137,23 @@ impl Sub for MoveY {
 
 /// フィールドにおけるセルの位置を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Position(pub PositionX, pub PositionY);
+pub struct Pos(pub PosX, pub PosY);
 
-impl Position {
-    pub const fn origin() -> Position {
-        Self(PositionX::origin(), PositionY::origin())
+impl Pos {
+    pub const fn origin() -> Pos {
+        Self(PosX::origin(), PosY::origin())
     }
 
-    pub const fn x(&self) -> PositionX {
+    pub const fn x(&self) -> PosX {
         self.0
     }
 
-    pub const fn y(&self) -> PositionY {
+    pub const fn y(&self) -> PosY {
         self.1
     }
 }
 
-impl<T: Into<Movement>> Add<T> for Position {
+impl<T: Into<Movement>> Add<T> for Pos {
     type Output = Self;
 
     fn add(self, rhs: T) -> Self::Output {
@@ -164,7 +164,7 @@ impl<T: Into<Movement>> Add<T> for Position {
     }
 }
 
-impl Sub for Position {
+impl Sub for Pos {
     type Output = Movement;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -249,36 +249,31 @@ mod tests_position_x {
 
     #[test]
     fn test_origin() {
-        let x = PositionX::origin();
+        let x = PosX::origin();
         assert_eq!(0, x.right_shift);
     }
 
     #[test]
     fn test_right_from_origin() {
-        assert_eq!(PositionX::origin() + right(5), PositionX::right(5));
+        assert_eq!(PosX::origin() + right(5), PosX::right(5));
     }
 
     #[test]
     fn test_as_positive_index() {
-        assert_eq!(
-            Some(2),
-            (PositionX::origin() + right(2)).as_positive_index()
-        );
-        assert_eq!(Some(0), PositionX::origin().as_positive_index());
-        assert!((PositionX::origin() + left(1))
-            .as_positive_index()
-            .is_none());
+        assert_eq!(Some(2), PosX::right(2).as_positive_index());
+        assert_eq!(Some(0), PosX::origin().as_positive_index());
+        assert!(PosX::right(-1).as_positive_index().is_none());
     }
 
     #[test]
     fn test_add() {
-        assert_eq!(9, (PositionX::origin() + right(9)).right_shift);
+        assert_eq!(9, (PosX::origin() + right(9)).right_shift);
     }
 
     #[test]
     fn test_sub() {
-        let p1 = PositionX::origin() + right(10);
-        let p2 = PositionX::origin() + right(5);
+        let p1 = PosX::right(10);
+        let p2 = PosX::right(5);
         assert_eq!(right(5), p1 - p2);
     }
 }
@@ -299,36 +294,31 @@ mod tests_position_y {
 
     #[test]
     fn test_origin() {
-        let y = PositionY::origin();
+        let y = PosY::origin();
         assert_eq!(0, y.below_shift);
     }
 
     #[test]
     fn test_below() {
-        assert_eq!(PositionY::origin() + below(5), PositionY::below(5));
+        assert_eq!(PosY::origin() + below(5), PosY::below(5));
     }
 
     #[test]
     fn test_as_positive_index() {
-        assert_eq!(
-            Some(2),
-            (PositionY::origin() + below(2)).as_positive_index()
-        );
-        assert_eq!(Some(0), PositionY::origin().as_positive_index());
-        assert!((PositionY::origin() + above(1))
-            .as_positive_index()
-            .is_none());
+        assert_eq!(Some(2), PosY::below(2).as_positive_index());
+        assert_eq!(Some(0), PosY::origin().as_positive_index());
+        assert!(PosY::below(-1).as_positive_index().is_none());
     }
 
     #[test]
     fn test_add() {
-        assert_eq!(9, (PositionY::origin() + below(9)).below_shift);
+        assert_eq!(9, (PosY::origin() + below(9)).below_shift);
     }
 
     #[test]
     fn test_sub() {
-        let p1 = PositionY::origin() + below(10);
-        let p2 = PositionY::origin() + below(5);
+        let p1 = PosY::below(10);
+        let p2 = PosY::below(5);
         assert_eq!(below(5), p1 - p2);
     }
 }
@@ -373,17 +363,17 @@ mod tests_position {
 
     #[test]
     fn test_origin() {
-        let p = Position::origin();
-        assert_eq!(PositionX::origin(), p.0);
-        assert_eq!(PositionY::origin(), p.1);
+        let p = Pos::origin();
+        assert_eq!(PosX::origin(), p.0);
+        assert_eq!(PosY::origin(), p.1);
     }
 
     #[test]
     fn test_add() {
-        let p = Position::origin();
+        let p = Pos::origin();
         let m = Movement(right(5), below(10));
         let p = p + m;
-        assert_eq!(PositionX::origin() + right(5), p.0);
-        assert_eq!(PositionY::origin() + below(10), p.1);
+        assert_eq!(PosX::right(5), p.0);
+        assert_eq!(PosY::below(10), p.1);
     }
 }

@@ -18,7 +18,7 @@ impl Block {
     /// # Returns
     /// 1. 指定した位置にセルが存在する場合は`Some(cell)`を返す．
     /// 1. 指定した位置にセルが存在しない場合は`None`を返す．
-    pub fn get(&self, p: Position) -> Option<&Cell> {
+    pub fn get(&self, p: Pos) -> Option<&Cell> {
         let x = p.x().as_positive_index()?;
         let y = p.y().as_positive_index()?;
         self.cells.get(TableIndex::new(x, y))
@@ -28,7 +28,7 @@ impl Block {
     /// # Returns
     /// 1. 指定した位置にセルが存在する場合は`Some(cell)`を返す．
     /// 1. 指定した位置にセルが存在しない場合は`None`を返す．
-    pub fn get_mut(&mut self, p: Position) -> Option<&mut Cell> {
+    pub fn get_mut(&mut self, p: Pos) -> Option<&mut Cell> {
         let x = p.x().as_positive_index()?;
         let y = p.y().as_positive_index()?;
         self.cells.get_mut(TableIndex::new(x, y))
@@ -67,15 +67,15 @@ pub struct ControlledBlock {
     /// ブロックの形状．
     block: Block,
     /// フィールドにおける，ブロックの左上セルの座標．
-    left_top: Position,
+    left_top: Pos,
 }
 
 impl ControlledBlock {
-    pub const fn new(block: Block, left_top: Position) -> ControlledBlock {
+    pub const fn new(block: Block, left_top: Pos) -> ControlledBlock {
         Self { block, left_top }
     }
 
-    pub fn iter_position_and_cell(&self) -> impl Iterator<Item = (Position, &'_ Cell)> + '_ {
+    pub fn iter_pos_and_cell(&self) -> impl Iterator<Item = (Pos, &'_ Cell)> + '_ {
         self.block
             .cells
             .iter_row()
@@ -121,6 +121,49 @@ mod tests_block {
     }
 
     #[test]
+    fn test_get() {
+        let block = Block::new(RowMajorTable::from_lines(vec![
+            vec![Normal, Bomb],
+            vec![BigBombUpperLeft, BigBombPart],
+        ]));
+        assert_eq!(Some(&Normal), block.get(Pos::origin()));
+        assert_eq!(Some(&Bomb), block.get(Pos::origin() + right(1)));
+        assert_eq!(Some(&BigBombUpperLeft), block.get(Pos::origin() + below(1)));
+        assert_eq!(
+            Some(&BigBombPart),
+            block.get(Pos::origin() + right(1) + below(1))
+        );
+        // ブロックの範囲外
+        assert!(block.get(Pos::origin() + left(1)).is_none());
+        assert!(block.get(Pos::origin() + above(1)).is_none());
+        assert!(block.get(Pos::origin() + right(2)).is_none());
+        assert!(block.get(Pos::origin() + below(2)).is_none());
+    }
+
+    #[test]
+    fn test_get_mut() {
+        let mut block = Block::new(RowMajorTable::from_lines(vec![
+            vec![Normal, Bomb],
+            vec![BigBombUpperLeft, BigBombPart],
+        ]));
+        assert_eq!(Some(&mut Normal), block.get_mut(Pos::origin()));
+        assert_eq!(Some(&mut Bomb), block.get_mut(Pos::origin() + right(1)));
+        assert_eq!(
+            Some(&mut BigBombUpperLeft),
+            block.get_mut(Pos::origin() + below(1))
+        );
+        assert_eq!(
+            Some(&mut BigBombPart),
+            block.get_mut(Pos::origin() + right(1) + below(1))
+        );
+        // ブロックの範囲外
+        assert!(block.get_mut(Pos::origin() + left(1)).is_none());
+        assert!(block.get_mut(Pos::origin() + above(1)).is_none());
+        assert!(block.get_mut(Pos::origin() + right(2)).is_none());
+        assert!(block.get_mut(Pos::origin() + below(2)).is_none());
+    }
+
+    #[test]
     fn test_turn_clockwise_single() {
         let single_block = Block::new(RowMajorTable::from_lines(vec![vec![Normal]]));
         let turned_block = single_block.turn_clockwise();
@@ -133,16 +176,16 @@ mod tests_block {
         let double_block = Block::new(RowMajorTable::from_lines(vec![vec![Normal, Bomb]]));
         // 回転
         let turn1 = double_block.turn_clockwise();
-        assert_eq!(Some(&Normal), turn1.get(Position::origin()));
-        assert_eq!(Some(&Bomb), turn1.get(Position::origin() + below(1)));
+        assert_eq!(Some(&Normal), turn1.get(Pos::origin()));
+        assert_eq!(Some(&Bomb), turn1.get(Pos::origin() + below(1)));
 
         let turn2 = turn1.turn_clockwise();
-        assert_eq!(Some(&Bomb), turn2.get(Position::origin()));
-        assert_eq!(Some(&Normal), turn2.get(Position::origin() + right(1)));
+        assert_eq!(Some(&Bomb), turn2.get(Pos::origin()));
+        assert_eq!(Some(&Normal), turn2.get(Pos::origin() + right(1)));
 
         let turn3 = turn2.turn_clockwise();
-        assert_eq!(Some(&Bomb), turn3.get(Position::origin()));
-        assert_eq!(Some(&Normal), turn3.get(Position::origin() + below(1)));
+        assert_eq!(Some(&Bomb), turn3.get(Pos::origin()));
+        assert_eq!(Some(&Normal), turn3.get(Pos::origin() + below(1)));
 
         assert_eq!(double_block, turn3.turn_clockwise());
     }
@@ -154,10 +197,16 @@ mod tests_block {
             vec![BigBombUpperLeft, BigBombPart],
         ]));
         let turned_block = square_block.turn_clockwise();
-        assert_eq!(BigBombUpperLeft, turned_block.cells[TableIndex::new(0, 0)]);
-        assert_eq!(Normal, turned_block.cells[TableIndex::new(1, 0)]);
-        assert_eq!(BigBombPart, turned_block.cells[TableIndex::new(0, 1)]);
-        assert_eq!(Bomb, turned_block.cells[TableIndex::new(1, 1)]);
+        assert_eq!(Some(&BigBombUpperLeft), turned_block.get(Pos::origin()));
+        assert_eq!(Some(&Normal), turned_block.get(Pos::origin() + right(1)));
+        assert_eq!(
+            Some(&BigBombPart),
+            turned_block.get(Pos::origin() + below(1))
+        );
+        assert_eq!(
+            Some(&Bomb),
+            turned_block.get(Pos::origin() + right(1) + below(1))
+        );
     }
 
     #[test]
@@ -170,13 +219,10 @@ mod tests_block {
             BigBombPart,
         ]]));
         let turn = bar_block.turn_clockwise();
-        assert_eq!(Some(&Normal), turn.get(Position::origin()));
-        assert_eq!(Some(&Bomb), turn.get(Position::origin() + below(1)));
-        assert_eq!(
-            Some(&BigBombUpperLeft),
-            turn.get(Position::origin() + below(2))
-        );
-        assert_eq!(Some(&BigBombPart), turn.get(Position::origin() + below(3)));
+        assert_eq!(Some(&Normal), turn.get(Pos::origin()));
+        assert_eq!(Some(&Bomb), turn.get(Pos::origin() + below(1)));
+        assert_eq!(Some(&BigBombUpperLeft), turn.get(Pos::origin() + below(2)));
+        assert_eq!(Some(&BigBombPart), turn.get(Pos::origin() + below(3)));
     }
 
     #[test]
@@ -226,26 +272,23 @@ mod tests_controlled_block {
                 vec![Normal, Bomb],
                 vec![BigBombUpperLeft, BigBombPart],
             ]));
-            let left_top_position = Position(
-                PositionX::origin() + right(1),
-                PositionY::origin() + below(2),
-            );
+            let left_top_position = Pos(PosX::right(1), PosY::below(2));
             ControlledBlock::new(block, left_top_position)
         };
 
-        let mut iter = controlled_block.iter_position_and_cell();
+        let mut iter = controlled_block.iter_pos_and_cell();
 
         let (p, c) = iter.next().unwrap();
-        assert_eq!(Position(PositionX::right(1), PositionY::below(2)), p);
+        assert_eq!(Pos(PosX::right(1), PosY::below(2)), p);
         assert_eq!(&Cell::Normal, c);
         let (p, c) = iter.next().unwrap();
-        assert_eq!(Position(PositionX::right(2), PositionY::below(2)), p);
+        assert_eq!(Pos(PosX::right(2), PosY::below(2)), p);
         assert_eq!(&Cell::Bomb, c);
         let (p, c) = iter.next().unwrap();
-        assert_eq!(Position(PositionX::right(1), PositionY::below(3)), p);
+        assert_eq!(Pos(PosX::right(1), PosY::below(3)), p);
         assert_eq!(&Cell::BigBombUpperLeft, c);
         let (p, c) = iter.next().unwrap();
-        assert_eq!(Position(PositionX::right(2), PositionY::below(3)), p);
+        assert_eq!(Pos(PosX::right(2), PosY::below(3)), p);
         assert_eq!(&Cell::BigBombPart, c);
 
         assert!(iter.next().is_none());
