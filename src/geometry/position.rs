@@ -17,6 +17,12 @@ impl PositionX {
         Self { right_shift: 0 }
     }
 
+    /// 原点から右向き正方向に指定した距離だけ離れた点を返す．
+    /// このメソッドは，`PositionX::origin() + right(right_shift)`と同じ結果を返す．
+    pub const fn right(right_shift: Shift) -> PositionX {
+        Self { right_shift }
+    }
+
     /// この点の，右向き正とした場合の原点からの位置を返す．
     /// # Returns
     /// 1. この点が原点または正の座標に存在する場合は`Some(position)`を返す．
@@ -74,6 +80,12 @@ pub struct PositionY {
 impl PositionY {
     pub const fn origin() -> PositionY {
         Self { below_shift: 0 }
+    }
+
+    /// 原点から下向き正方向に指定した距離だけ離れた点を返す．
+    /// このメソッドは，`PositionY::origin() + below(below_shift)`と同じ結果を返す．
+    pub const fn below(below_shift: Shift) -> PositionY {
+        Self { below_shift }
     }
 
     /// この点の，下向き正とした場合の原点からの位置を返す．
@@ -242,6 +254,11 @@ mod tests_position_x {
     }
 
     #[test]
+    fn test_right_from_origin() {
+        assert_eq!(PositionX::origin() + right(5), PositionX::right(5));
+    }
+
+    #[test]
     fn test_as_positive_index() {
         assert_eq!(
             Some(2),
@@ -284,6 +301,11 @@ mod tests_position_y {
     fn test_origin() {
         let y = PositionY::origin();
         assert_eq!(0, y.below_shift);
+    }
+
+    #[test]
+    fn test_below() {
+        assert_eq!(PositionY::origin() + below(5), PositionY::below(5));
     }
 
     #[test]
