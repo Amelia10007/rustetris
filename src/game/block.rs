@@ -14,12 +14,20 @@ impl Block {
         Self { cells }
     }
 
+    /// 指定した位置のセルへの参照を返す．
+    /// # Returns
+    /// 1. 指定した位置にセルが存在する場合は`Some(cell)`を返す．
+    /// 1. 指定した位置にセルが存在しない場合は`None`を返す．
     pub fn get(&self, p: Position) -> Option<&Cell> {
         let x = p.x().as_positive_index()?;
         let y = p.y().as_positive_index()?;
         self.cells.get(TableIndex::new(x, y))
     }
 
+    /// 指定した位置のセルへの可変参照を返す．
+    /// # Returns
+    /// 1. 指定した位置にセルが存在する場合は`Some(cell)`を返す．
+    /// 1. 指定した位置にセルが存在しない場合は`None`を返す．
     pub fn get_mut(&mut self, p: Position) -> Option<&mut Cell> {
         let x = p.x().as_positive_index()?;
         let y = p.y().as_positive_index()?;
@@ -39,6 +47,7 @@ impl Block {
         Self { cells: table }
     }
 
+    /// このブロックを反時計回りに90度だけ回転したものを返す．
     pub fn turn_unticlockwise(&self) -> Block {
         let mut table = RowMajorTable::from_fill(Cell::Empty, self.cells.size().swap());
         for (y, row) in self.cells.iter_row().enumerate() {
