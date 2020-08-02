@@ -1,4 +1,4 @@
-use super::cell::Cell;
+use super::Cell;
 use crate::geometry::*;
 use std::ops::{Deref, DerefMut};
 
