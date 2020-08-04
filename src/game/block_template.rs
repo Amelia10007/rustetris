@@ -598,7 +598,50 @@ mod block_template {
     pub(super) mod quintuple {
         use super::*;
 
-        pub(in super::super) const COLLECTIONS: [CellTagTableCollection; 0] = [];
+        const BAR: CellTagTableCollection = CellTagTableCollection([
+            [
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(2), Empty, Empty],
+                [Empty, Empty, Occupied(3), Empty, Empty],
+                [Empty, Empty, Occupied(4), Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [
+                    Occupied(4),
+                    Occupied(3),
+                    Occupied(2),
+                    Occupied(1),
+                    Occupied(0),
+                ],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Occupied(4), Empty, Empty],
+                [Empty, Empty, Occupied(3), Empty, Empty],
+                [Empty, Empty, Occupied(2), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [
+                    Occupied(0),
+                    Occupied(1),
+                    Occupied(2),
+                    Occupied(2),
+                    Occupied(4),
+                ],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+        ]);
+
+        pub(in super::super) const COLLECTIONS: [CellTagTableCollection; 1] = [BAR];
     }
 }
 
