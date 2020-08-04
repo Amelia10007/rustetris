@@ -432,7 +432,167 @@ mod block_template {
             ],
         ]);
 
-        pub(in super::super) const COLLECTIONS: [CellTagTableCollection; 2] = [O,Z];
+        /// Sミノ
+        const S: CellTagTableCollection = CellTagTableCollection([
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(0), Occupied(2), Empty],
+                [Empty, Empty, Empty, Occupied(3), Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(0), Occupied(1), Empty],
+                [Empty, Occupied(3), Occupied(2), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(3), Empty, Empty, Empty],
+                [Empty, Occupied(2), Occupied(0), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(2), Occupied(3), Empty],
+                [Empty, Occupied(1), Occupied(0), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+        ]);
+
+        /// Jミノ
+        const J: CellTagTableCollection = CellTagTableCollection([
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(2), Occupied(3), Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(0), Occupied(1), Occupied(2), Empty],
+                [Empty, Empty, Empty, Occupied(3), Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Occupied(3), Occupied(2), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(3), Empty, Empty, Empty],
+                [Empty, Occupied(2), Occupied(1), Occupied(0), Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+        ]);
+
+        /// Lミノ
+        const L: CellTagTableCollection = CellTagTableCollection([
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(2), Occupied(3), Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(2), Occupied(1), Occupied(0), Empty],
+                [Empty, Occupied(3), Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(3), Occupied(2), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Occupied(3), Empty],
+                [Empty, Occupied(0), Occupied(1), Occupied(2), Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+        ]);
+
+        /// Tミノ
+        const T: CellTagTableCollection = CellTagTableCollection([
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Occupied(1), Occupied(3), Empty],
+                [Empty, Empty, Occupied(2), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(2), Occupied(1), Occupied(0), Empty],
+                [Empty, Empty, Occupied(3), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(2), Empty, Empty],
+                [Empty, Occupied(3), Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Occupied(3), Empty, Empty],
+                [Empty, Occupied(0), Occupied(1), Occupied(2), Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+        ]);
+
+        /// Iミノ
+        const I: CellTagTableCollection = CellTagTableCollection([
+            [
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(2), Empty, Empty],
+                [Empty, Empty, Occupied(3), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(3), Occupied(2), Occupied(1), Occupied(0)],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Occupied(3), Empty, Empty],
+                [Empty, Empty, Occupied(2), Empty, Empty],
+                [Empty, Empty, Occupied(1), Empty, Empty],
+                [Empty, Empty, Occupied(0), Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+            [
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Occupied(0), Occupied(1), Occupied(2), Occupied(3)],
+                [Empty, Empty, Empty, Empty, Empty],
+                [Empty, Empty, Empty, Empty, Empty],
+            ],
+        ]);
+
+        pub(in super::super) const COLLECTIONS: [CellTagTableCollection; 7] = [O, Z, S, J, L, T, I];
     }
 
     pub(super) mod quintuple {
