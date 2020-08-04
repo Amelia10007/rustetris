@@ -1,4 +1,5 @@
 mod block;
+mod block_template;
 mod cell;
 mod field;
 
