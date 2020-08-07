@@ -141,7 +141,9 @@ impl<'c> CanvasRegion<'c> {
 
         if let Some(x) = canvas_pos.x().as_positive_index() {
             if let Some(y) = canvas_pos.y().as_positive_index() {
-                self.canvas.cells[y][x] = cell;
+                if let Some(c) = self.canvas.cells.get_mut(y).and_then(|row| row.get_mut(x)) {
+                    *c = cell;
+                }
             }
         }
     }
