@@ -245,7 +245,7 @@ impl Index<Direction> for CellTagTableCollection {
 }
 
 /// ブロックを表す．
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Block {
     /// このブロックを構成するセル．
     cells: Table<Cell>,
@@ -291,12 +291,10 @@ impl Block {
     /// このブロックを構成する，すべてのセルとその位置を列挙する．
     pub fn iter_pos_and_cell(&self) -> impl Iterator<Item = (Pos, &Cell)> + '_ {
         self.cells.iter().enumerate().flat_map(|(y, row)| {
-            row.iter()
-                .enumerate()
-                .map(move |(x, cell)| {
-                    let p = Pos(PosX::right(x as i8), PosY::below(y as i8));
-                    (p, cell)
-                })
+            row.iter().enumerate().map(move |(x, cell)| {
+                let p = Pos(PosX::right(x as i8), PosY::below(y as i8));
+                (p, cell)
+            })
         })
     }
 
