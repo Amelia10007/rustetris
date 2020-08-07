@@ -72,6 +72,9 @@ pub struct Canvas {
 
 impl Canvas {
     pub fn new() -> Canvas {
+        // ncursesを初期化する
+        initscr();
+
         Self {
             cells: [[CanvasCell::default(); CANVAS_WIDTH]; CANVAS_HEIHGT],
             color_pair_indexes: HashMap::new(),
@@ -81,6 +84,16 @@ impl Canvas {
 
     pub fn extract_region(&mut self, roi: RegionOfInterest) -> CanvasRegion<'_> {
         CanvasRegion::new(self, roi)
+    }
+
+    pub fn draw_cell(&mut self, pos: Pos, cell: CanvasCell) {
+        if let Some(x) = pos.x().as_positive_index() {
+            if let Some(y) = pos.y().as_positive_index() {
+                if let Some(c) = self.cells.get_mut(y).and_then(|row| row.get_mut(x)) {
+                    *c = cell;
+                }
+            }
+        }
     }
 
     pub fn flush(&mut self) {
@@ -110,6 +123,13 @@ impl Canvas {
         }
 
         refresh();
+    }
+}
+
+impl Drop for Canvas {
+    fn drop(&mut self) {
+        // ncursesを終了する
+        endwin();
     }
 }
 

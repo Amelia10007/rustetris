@@ -23,6 +23,7 @@ impl ControlledBlock {
     /// 最上段のセルをすべて列挙し終えたら，次はひとつ下の段にあるセルを左端から列挙する．
     /// イテレータは，最下段のセルまで以上の操作を繰り返し行う．
     pub fn iter_pos_and_occupied_cell(&self) -> impl Iterator<Item = (Pos, &'_ Cell)> + '_ {
+        // ブロックは1つ以上のセルから構成されるので，ここのunwrap()は必ず成功する．
         let diff = self.left_top - self.block.iter_pos_and_cell().next().unwrap().0;
         self.block
             .iter_pos_and_cell()
