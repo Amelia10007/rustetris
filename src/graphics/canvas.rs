@@ -1,5 +1,5 @@
 use crate::data_type::Pair;
-use crate::geometry::Pos;
+use crate::geometry::*;
 use ncurses::*;
 use std::collections::HashMap;
 
@@ -81,7 +81,7 @@ impl Canvas {
     }
 
     pub fn extract_region(&mut self, roi: RegionOfInterest) -> CanvasRegion<'_> {
-        unimplemented!()
+        CanvasRegion::new(self, roi)
     }
 
     pub fn flush(&mut self) {
@@ -112,23 +112,34 @@ impl Canvas {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RegionOfInterest {
-    pub left_top: Pair<isize>,
-    pub size: Pair<isize>,
+    pub left_top: Pos,
+    pub size: Movement,
 }
 
 impl RegionOfInterest {
-    pub const fn new(left_top: Pair<isize>, size: Pair<isize>) -> RegionOfInterest {
+    pub const fn new(left_top: Pos, size: Movement) -> RegionOfInterest {
         Self { left_top, size }
     }
 }
 
 pub struct CanvasRegion<'c> {
-    roi: RegionOfInterest,
     canvas: &'c mut Canvas,
+    roi: RegionOfInterest,
 }
 
 impl<'c> CanvasRegion<'c> {
+    pub fn new(canvas: &'c mut Canvas, roi: RegionOfInterest) -> CanvasRegion<'c> {
+        Self { canvas, roi }
+    }
+
     pub fn draw_cell(&mut self, pos: Pos, cell: CanvasCell) {
-        unimplemented!()
+        let diff = pos - self.roi.left_top;
+        let canvas_pos = self.roi.left_top + diff;
+
+        if let Some(x) = canvas_pos.x().as_positive_index() {
+            if let Some(y) = canvas_pos.y().as_positive_index() {
+                self.canvas.cells[y][x] = cell;
+            }
+        }
     }
 }
