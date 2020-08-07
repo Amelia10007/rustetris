@@ -1,4 +1,3 @@
-use crate::data_type::Pair;
 use crate::geometry::*;
 use ncurses::*;
 use std::collections::HashMap;
@@ -85,6 +84,8 @@ impl Canvas {
     }
 
     pub fn flush(&mut self) {
+        clear();
+
         for row in self.cells.iter() {
             for cell in row.iter() {
                 let color = cell.color;
@@ -107,6 +108,8 @@ impl Canvas {
             }
             addstr("\n");
         }
+
+        refresh();
     }
 }
 
