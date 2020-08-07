@@ -8,4 +8,7 @@ edition = "2018"
 
 [dependencies]
 lazy_static = "1.*"
-termion = "*"
+
+# On Linux, the following command must be run before building.
+# $ sudo apt install libucurses5-dev
+ncurses = "*"
