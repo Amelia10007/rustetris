@@ -1,10 +1,11 @@
 use crate::geometry::*;
-use ncurses::*;
+use crate::ncurses_wrapper::*;
 use std::collections::HashMap;
+use take_if::TakeIf;
 
 mod consts {
     pub const CANVAS_WIDTH: usize = 80;
-    pub const CANVAS_HEIHGT: usize = 40;
+    pub const CANVAS_HEIHGT: usize = 24;
 }
 
 use consts::*;
@@ -12,124 +13,43 @@ use consts::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CanvasCell {
     c: char,
-    color: CanvasCellColor,
+    color_pair: ColorPair,
 }
 
 impl Default for CanvasCell {
     fn default() -> Self {
         Self {
             c: char::default(),
-            color: CanvasCellColor::default(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Color {
-    Black,
-    White,
-    Red,
-    Yellow,
-    Green,
-    Blue,
-    Cyan,
-}
-
-impl Color {
-    fn to_ncurses_color(&self) -> i16 {
-        match self {
-            Color::Black => COLOR_BLACK,
-            Color::White => COLOR_WHITE,
-            Color::Red => COLOR_RED,
-            Color::Yellow => COLOR_YELLOW,
-            Color::Green => COLOR_GREEN,
-            Color::Blue => COLOR_BLUE,
-            Color::Cyan => COLOR_CYAN,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct CanvasCellColor {
-    foreground: Color,
-    background: Color,
-}
-
-impl Default for CanvasCellColor {
-    fn default() -> Self {
-        Self {
-            foreground: Color::White,
-            background: Color::Black,
+            color_pair: ColorPair::default(),
         }
     }
 }
 
 pub struct Canvas {
     cells: [[CanvasCell; CANVAS_WIDTH]; CANVAS_HEIHGT],
-    color_pair_indexes: HashMap<CanvasCellColor, i16>,
-    next_color_pair_index: i16,
 }
 
 impl Canvas {
     pub fn new() -> Canvas {
-        // ncursesを初期化する
-        initscr();
-
         Self {
             cells: [[CanvasCell::default(); CANVAS_WIDTH]; CANVAS_HEIHGT],
-            color_pair_indexes: HashMap::new(),
-            next_color_pair_index: 1,
         }
     }
 
-    pub fn extract_region(&mut self, roi: RegionOfInterest) -> CanvasRegion<'_> {
-        CanvasRegion::new(self, roi)
+    pub fn extract_region(&mut self, roi: RegionOfInterest) -> SubCanvas<'_> {
+        SubCanvas::new(self, roi)
     }
 
-    pub fn draw_cell(&mut self, pos: Pos, cell: CanvasCell) {
-        if let Some(x) = pos.x().as_positive_index() {
-            if let Some(y) = pos.y().as_positive_index() {
-                if let Some(c) = self.cells.get_mut(y).and_then(|row| row.get_mut(x)) {
-                    *c = cell;
-                }
-            }
-        }
-    }
-
-    pub fn flush(&mut self) {
-        clear();
-
+    pub fn write(&mut self, ncurses: &mut NcursesWrapper) -> Result<()> {
         for row in self.cells.iter() {
             for cell in row.iter() {
-                let color = cell.color;
-                let index = match self.color_pair_indexes.get(&color) {
-                    Some(index) => *index,
-                    None => {
-                        self.color_pair_indexes
-                            .insert(color, self.next_color_pair_index);
-                        init_pair(
-                            self.next_color_pair_index,
-                            color.foreground.to_ncurses_color(),
-                            color.background.to_ncurses_color(),
-                        );
-                        self.next_color_pair_index += 1;
-                        self.next_color_pair_index - 1
-                    }
-                };
-                attron(COLOR_PAIR(index));
-                addstr(&cell.c.to_string());
+                let &CanvasCell { c, color_pair } = cell;
+                ncurses.add_str(c.to_string(), color_pair)?;
             }
-            addstr("\n");
+            ncurses.add_str("\n", ColorPair::default())?;
         }
 
-        refresh();
-    }
-}
-
-impl Drop for Canvas {
-    fn drop(&mut self) {
-        // ncursesを終了する
-        endwin();
+        Ok(())
     }
 }
 
@@ -145,26 +65,41 @@ impl RegionOfInterest {
     }
 }
 
-pub struct CanvasRegion<'c> {
+pub struct SubCanvas<'c> {
     canvas: &'c mut Canvas,
     roi: RegionOfInterest,
 }
 
-impl<'c> CanvasRegion<'c> {
-    pub fn new(canvas: &'c mut Canvas, roi: RegionOfInterest) -> CanvasRegion<'c> {
+impl<'c> SubCanvas<'c> {
+    pub fn new(canvas: &'c mut Canvas, roi: RegionOfInterest) -> SubCanvas<'c> {
         Self { canvas, roi }
     }
 
-    pub fn draw_cell(&mut self, pos: Pos, cell: CanvasCell) {
-        let diff = pos - self.roi.left_top;
-        let canvas_pos = self.roi.left_top + diff;
+    pub fn write_cell(&mut self, pos: Pos, cell: CanvasCell) {
+        let RegionOfInterest { left_top, size } = self.roi;
+        let diff = pos - left_top;
+        let canvas_pos = left_top + diff;
 
-        if let Some(x) = canvas_pos.x().as_positive_index() {
-            if let Some(y) = canvas_pos.y().as_positive_index() {
+        if let Some(x) = canvas_pos
+            .x()
+            .as_positive_index()
+            .take_if(|&x| x < size.x().as_positive_index().unwrap())
+        {
+            if let Some(y) = canvas_pos
+                .y()
+                .as_positive_index()
+                .take_if(|&x| x < size.y().as_positive_index().unwrap())
+            {
                 if let Some(c) = self.canvas.cells.get_mut(y).and_then(|row| row.get_mut(x)) {
                     *c = cell;
                 }
             }
         }
     }
+}
+
+pub trait Drawable {
+    fn region_size(&self) -> Movement;
+
+    fn draw(&self, target: &mut SubCanvas<'_>);
 }

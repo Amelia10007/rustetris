@@ -54,6 +54,12 @@ impl Sub for PosX {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MoveX(Shift);
 
+impl MoveX {
+    pub fn as_positive_index(&self) -> Option<usize> {
+        self.0.try_into().ok()
+    }
+}
+
 impl Add for MoveX {
     type Output = Self;
 
@@ -118,6 +124,12 @@ impl Sub for PosY {
 /// y方向の移動量を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MoveY(Shift);
+
+impl MoveY {
+    pub fn as_positive_index(&self) -> Option<usize> {
+        self.0.try_into().ok()
+    }
+}
 
 impl Add for MoveY {
     type Output = Self;

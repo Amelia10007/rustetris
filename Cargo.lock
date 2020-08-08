@@ -41,4 +41,11 @@ version = "0.1.0"
 dependencies = [
  "lazy_static",
  "ncurses",
+ "take-if",
 ]
+
+[[package]]
+name = "take-if"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8dd5a45c9b3e589d932624063dfc762f999b5dd400d029dc77ad85649cf9c9f0"
