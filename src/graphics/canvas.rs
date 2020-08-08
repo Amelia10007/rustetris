@@ -1,6 +1,5 @@
 use crate::geometry::*;
 use crate::ncurses_wrapper::*;
-use std::collections::HashMap;
 use take_if::TakeIf;
 
 mod consts {
@@ -36,7 +35,7 @@ impl Canvas {
         }
     }
 
-    pub fn extract_region(&mut self, roi: RegionOfInterest) -> SubCanvas<'_> {
+    pub fn sub_canvas(&mut self, roi: RegionOfInterest) -> SubCanvas<'_> {
         SubCanvas::new(self, roi)
     }
 
@@ -75,26 +74,34 @@ impl<'c> SubCanvas<'c> {
         Self { canvas, roi }
     }
 
-    pub fn write_cell(&mut self, pos: Pos, cell: CanvasCell) {
+    pub fn sub_canvas(&'c mut self, roi: RegionOfInterest) -> SubCanvas<'c> {
+        let diff = roi.left_top - self.roi.left_top;
+        let left_top = self.roi.left_top + diff;
+        let roi = RegionOfInterest::new(left_top, roi.size);
+        Self::new(self.canvas, roi)
+    }
+
+    pub fn write_cell(&mut self, pos: Pos, cell: CanvasCell) -> Option<()> {
         let RegionOfInterest { left_top, size } = self.roi;
         let diff = pos - left_top;
         let canvas_pos = left_top + diff;
 
-        if let Some(x) = canvas_pos
+        let x = canvas_pos
             .x()
             .as_positive_index()
-            .take_if(|&x| x < size.x().as_positive_index().unwrap())
-        {
-            if let Some(y) = canvas_pos
-                .y()
-                .as_positive_index()
-                .take_if(|&x| x < size.y().as_positive_index().unwrap())
-            {
-                if let Some(c) = self.canvas.cells.get_mut(y).and_then(|row| row.get_mut(x)) {
-                    *c = cell;
-                }
-            }
-        }
+            .take_if(|&x| x < size.x().as_positive_index().unwrap())?;
+        let y = canvas_pos
+            .y()
+            .as_positive_index()
+            .take_if(|&x| x < size.y().as_positive_index().unwrap())?;
+        let c = self
+            .canvas
+            .cells
+            .get_mut(y)
+            .and_then(|row| row.get_mut(x))?;
+        *c = cell;
+
+        Some(())
     }
 }
 
