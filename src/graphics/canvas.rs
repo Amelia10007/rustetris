@@ -41,8 +41,7 @@ impl Canvas {
 
     pub fn write(&mut self, ncurses: &mut NcursesWrapper) -> Result<()> {
         for row in self.cells.iter() {
-            for cell in row.iter() {
-                let &CanvasCell { c, color_pair } = cell;
+            for &CanvasCell { c, color_pair } in row.iter() {
                 ncurses.add_str(c.to_string(), color_pair)?;
             }
             ncurses.add_str("\n", ColorPair::default())?;
