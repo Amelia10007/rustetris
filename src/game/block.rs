@@ -31,10 +31,7 @@ impl ControlledBlock {
     }
 
     pub fn move_by(&self, movement: Movement) -> ControlledBlock {
-        Self {
-            block: self.block,
-            left_top: self.left_top + movement,
-        }
+        Self::new(self.block, self.left_top + movement)
     }
 
     pub fn rotate_clockwise(&self) -> ControlledBlock {
