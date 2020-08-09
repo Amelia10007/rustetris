@@ -1,5 +1,6 @@
 use super::Cell;
 use crate::geometry::*;
+use crate::graphics::*;
 use std::ops::{Deref, DerefMut};
 
 mod consts {
@@ -68,6 +69,23 @@ impl Field {
     /// 最上段から順にこのフィールドのラインを返す．
     pub fn rows(&self) -> impl Iterator<Item = FieldRow<'_>> + '_ {
         (0..HEIGHT).map(move |i| FieldRow::from_y_index(self, i))
+    }
+}
+
+impl Drawable for Field {
+    fn region_size(&self) -> Movement {
+        right(WIDTH as i8) + below(HEIGHT as i8)
+    }
+
+    fn draw<C: Canvas>(&self, canvas: &mut C) {
+        for (y, row) in self.rows().enumerate() {
+            for (x, cell) in row.iter().enumerate() {
+                let pos = Pos(PosX::right(x as i8), PosY::below(y as i8));
+                let roi = cell.get_roi(pos);
+                let mut canvas = canvas.child(roi);
+                cell.draw(&mut canvas);
+            }
+        }
     }
 }
 

@@ -17,6 +17,7 @@ fn main() {
 
     let block_selector = BlockFactory;
     let mut block = block_selector.generate_block();
+    let field = game::Field::empty();
 
     loop {
         match term.read_key() {
@@ -31,9 +32,9 @@ fn main() {
 
         canvas.clear();
 
-        let roi = block.get_roi(Pos::origin());
+        let roi = field.get_roi(Pos::origin());
         let mut sub_canvas = canvas.child(roi);
-        block.draw(&mut sub_canvas);
+        field.draw(&mut sub_canvas);
 
         term.clear_screen().unwrap();
         canvas.construct_output_string(&mut buffer);
