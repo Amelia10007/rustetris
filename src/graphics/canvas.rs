@@ -26,6 +26,12 @@ pub trait Drawable {
     /// この物体を描画するために必要な領域のサイズを返す．
     fn region_size(&self) -> Movement;
 
+    /// 指定した位置にこの物体を描画する場合に必要となるROIを返す．
+    fn get_roi(&self, left_top: Pos) -> RegionOfInterest {
+        let size = self.region_size();
+        RegionOfInterest::new(left_top, size)
+    }
+
     /// この物体を指定したキャンバスに描画する．
     fn draw<C: Canvas>(&self, canvas: &mut C);
 }

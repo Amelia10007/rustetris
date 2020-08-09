@@ -31,8 +31,7 @@ fn main() {
 
         canvas.clear();
 
-        let size = block.region_size();
-        let roi = RegionOfInterest::new(Pos::origin(), size);
+        let roi = block.get_roi(Pos::origin());
         let mut sub_canvas = canvas.child(roi);
         block.draw(&mut sub_canvas);
 

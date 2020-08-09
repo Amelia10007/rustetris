@@ -347,7 +347,7 @@ impl Drawable for Block {
 
     fn draw<C: Canvas>(&self, canvas: &mut C) {
         for (pos, cell) in self.iter_pos_and_occupied_cell() {
-            let roi = RegionOfInterest::new(pos, cell.region_size());
+            let roi = cell.get_roi(pos);
             let mut sub_canvas = canvas.child(roi);
             cell.draw(&mut sub_canvas);
         }
