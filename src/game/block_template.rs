@@ -1,5 +1,6 @@
 use super::Cell;
 use crate::geometry::*;
+use crate::graphics::*;
 use std::ops::Index;
 
 mod consts {
@@ -336,6 +337,20 @@ impl Block {
             }
         }
         cells
+    }
+}
+
+impl Drawable for Block {
+    fn region_size(&self) -> Movement {
+        right(BLOCK_TABLE_SIZE as i8) + below(BLOCK_TABLE_SIZE as i8)
+    }
+
+    fn draw<C: Canvas>(&self, canvas: &mut C) {
+        for (pos, cell) in self.iter_pos_and_occupied_cell() {
+            let roi = RegionOfInterest::new(pos, cell.region_size());
+            let mut sub_canvas = canvas.child(roi);
+            cell.draw(&mut sub_canvas);
+        }
     }
 }
 

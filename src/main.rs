@@ -2,35 +2,55 @@ mod data_type;
 mod game;
 mod geometry;
 mod graphics;
-mod ncurses_wrapper;
+mod user;
 
-use ncurses_wrapper::*;
+use game::BlockSelector;
+use geometry::*;
+use graphics::*;
+use user::Key::*;
 
 fn main() {
-    let mut nc = ncurses_wrapper::NcursesWrapper::new().unwrap();
+    let mut canvas = RootCanvas::new();
+    let term = console::Term::buffered_stdout();
 
-    let color1 = ColorPair::new(Color::Yellow, Color::Black);
-    let color2 = ColorPair::new(Color::Green, Color::Black);
+    let mut buffer = String::new();
 
-    let mut count = 0;
+    let block_selector = BlockFactory;
+    let mut block = block_selector.generate_block();
 
-    for i in 0.. {
-        let color = if i % 2 == 0 { color1 } else { color2 };
-
-        nc.erase().unwrap();
-
-        let keys = nc.keys();
-        if keys.is_empty() {
-            count = 0;
-        } else {
-            count += 1;
+    loop {
+        match term.read_key() {
+            Ok(key) => match key {
+                Char('x') => block = block.rotate_clockwise(),
+                Char('z') => block = block.rotate_unticlockwise(),
+                Char('q') => break,
+                _ => {}
+            },
+            _ => {}
         }
 
-        nc.add_str(format!("count {}, {} keys", count, keys.len()), color)
-            .unwrap();
+        canvas.clear();
 
-        nc.refresh().unwrap();
+        let size = block.region_size();
+        let roi = RegionOfInterest::new(Pos::origin(), size);
+        let mut sub_canvas = canvas.child(roi);
+        block.draw(&mut sub_canvas);
 
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        term.clear_screen().unwrap();
+        canvas.construct_output_string(&mut buffer);
+        term.write_str(&buffer).unwrap();
+        term.flush().unwrap();
+    }
+}
+
+struct BlockFactory;
+
+impl BlockSelector for BlockFactory {
+    fn select_block_shape(&self) -> game::BlockShape {
+        game::QuadrupleBlockShape::J.into()
+    }
+
+    fn select_bomb(&self, _shape: game::BlockShape) -> game::BombTag {
+        game::BombTag::None
     }
 }
