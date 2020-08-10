@@ -68,3 +68,30 @@ impl Default for CanvasCell {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_square_char_new() {
+        // コンストラクタが通るパターン
+        let _c = SquareChar::new('a', 'a');
+        let _c = SquareChar::new('a', '0');
+        let _c = SquareChar::new('0', '0');
+        let _c = SquareChar::new('0', ' ');
+        let _c = SquareChar::new('0', '_');
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_square_char_invalid_left() {
+        let _c = SquareChar::new('\n', 'a');
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_square_char_invalid_right() {
+        let _c = SquareChar::new('a', '\n');
+    }
+}

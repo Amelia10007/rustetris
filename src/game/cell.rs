@@ -63,9 +63,7 @@ impl Drawable for Cell {
     }
 
     fn draw<C: Canvas>(&self, canvas: &mut C) {
-        let pos = Pos::origin();
-        let canvas_cell = self.canvas_cell();
-        canvas.draw_cell(pos, canvas_cell);
+        canvas.draw_cell(Pos::origin(), self.canvas_cell());
     }
 }
 

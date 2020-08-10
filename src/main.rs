@@ -32,9 +32,7 @@ fn main() {
 
         canvas.clear();
 
-        let roi = field.get_roi(Pos::origin());
-        let mut sub_canvas = canvas.child(roi);
-        field.draw(&mut sub_canvas);
+        field.draw_on_child(Pos::origin(), &mut canvas);
 
         term.clear_screen().unwrap();
         canvas.construct_output_string(&mut buffer);

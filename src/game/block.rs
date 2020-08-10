@@ -6,9 +6,9 @@ use crate::geometry::*;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ControlledBlock {
     /// ブロック．
-    block: Block,
+    pub block: Block,
     /// フィールドにおける，ブロックの左上セルの座標．
-    left_top: Pos,
+    pub left_top: Pos,
 }
 
 impl ControlledBlock {

@@ -340,6 +340,13 @@ impl Block {
     }
 }
 
+impl Default for Block {
+    fn default() -> Self {
+        let tables = block_template::get_cell_tag_collection(SingleBlockShape::O.into());
+        Self::new(tables, Direction::Above, BombTag::None)
+    }
+}
+
 impl Drawable for Block {
     fn region_size(&self) -> Movement {
         right(BLOCK_TABLE_SIZE as i8) + below(BLOCK_TABLE_SIZE as i8)
@@ -347,9 +354,7 @@ impl Drawable for Block {
 
     fn draw<C: Canvas>(&self, canvas: &mut C) {
         for (pos, cell) in self.iter_pos_and_occupied_cell() {
-            let roi = cell.get_roi(pos);
-            let mut sub_canvas = canvas.child(roi);
-            cell.draw(&mut sub_canvas);
+            cell.draw_on_child(pos, canvas);
         }
     }
 }

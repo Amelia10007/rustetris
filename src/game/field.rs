@@ -81,9 +81,7 @@ impl Drawable for Field {
         for (y, row) in self.rows().enumerate() {
             for (x, cell) in row.iter().enumerate() {
                 let pos = Pos(PosX::right(x as i8), PosY::below(y as i8));
-                let roi = cell.get_roi(pos);
-                let mut canvas = canvas.child(roi);
-                cell.draw(&mut canvas);
+                cell.draw_on_child(pos, canvas);
             }
         }
     }
