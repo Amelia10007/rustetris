@@ -15,7 +15,7 @@ pub enum MenuCommand {
 
 /// ゲームプレイ画面で使用可能な操作を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SingleGameCommand {
+pub enum GameCommand {
     /// ブロックを1セルぶん左に移動させる．
     Left,
     /// ブロックを1セルぶん右に移動させる．
@@ -33,21 +33,12 @@ pub enum SingleGameCommand {
     /// ホールドブロックが存在しない場合は，現在操作中のブロックをホールドブロックとして，Nextブロック列の先頭ブロックを
     /// 新たな操作ブロックとする．
     Hold,
-    /// 一時停止．
-    Pause,
 }
 
-/// ユーザからの入力をシステム内で利用する操作に変換するトレイト．
-pub trait InputMapper {
-    fn map_to_menu_command(&self, key: Key) -> Option<MenuCommand>;
+pub struct MenuInputMapper;
 
-    fn map_to_single_game_command(&self, key: Key) -> Option<SingleGameCommand>;
-}
-
-pub struct SinglePlayerInputMapper;
-
-impl InputMapper for SinglePlayerInputMapper {
-    fn map_to_menu_command(&self, key: Key) -> Option<MenuCommand> {
+impl MenuInputMapper {
+    pub fn map(&self, key: Key) -> Option<MenuCommand> {
         use Key::*;
         use MenuCommand::*;
 
@@ -59,10 +50,14 @@ impl InputMapper for SinglePlayerInputMapper {
             _ => None,
         }
     }
+}
 
-    fn map_to_single_game_command(&self, key: Key) -> Option<SingleGameCommand> {
+pub struct SinglePlayerInputMapper;
+
+impl SinglePlayerInputMapper {
+    pub fn map(&self, key: Key) -> Option<GameCommand> {
+        use GameCommand::*;
         use Key::*;
-        use SingleGameCommand::*;
 
         match key {
             Char('z') => Some(RotateUnticlockwise),
@@ -72,8 +67,15 @@ impl InputMapper for SinglePlayerInputMapper {
             ArrowRight => Some(Right),
             ArrowUp => Some(Drop),
             ArrowDown => Some(Down),
-            Home => Some(Pause),
             _ => None,
         }
+    }
+}
+
+pub struct DoublePlayerInputMapper;
+
+impl DoublePlayerInputMapper {
+    pub fn map(&self, key: Key) -> (Option<GameCommand>, Option<GameCommand>) {
+        unimplemented!()
     }
 }
