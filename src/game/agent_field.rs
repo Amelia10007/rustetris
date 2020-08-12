@@ -1,7 +1,7 @@
 use super::{Block, BlockSelector, Cell, Field};
+use crate::data_type::Shake;
 use crate::geometry::*;
 use crate::graphics::*;
-use crate::user::GameCommand;
 
 mod consts {
     pub const NEXT_BLOCK_NUM: usize = 2;
@@ -34,8 +34,6 @@ impl AgentField {
         let next_blocks = NextBlockCollection::fill(selector);
         let hold_block = selector.generate_block();
 
-        println!("pos: {:?}", current_block_pos);
-
         Self {
             field,
             current_block,
@@ -43,11 +41,6 @@ impl AgentField {
             next_blocks,
             hold_block,
         }
-    }
-
-    pub fn apply_game_command(self, command: GameCommand) -> Self {
-        use GameCommand::*;
-        unimplemented!()
     }
 
     pub fn move_block_to_left(self) -> Self {
@@ -106,12 +99,41 @@ impl AgentField {
     }
 
     pub fn rotate_block_clockwise(self) -> Self {
-        let block = self.current_block.rotate_clockwise();
-        unimplemented!()
+        let rotated_block = self.current_block.rotate_clockwise();
+
+        for y in Shake::<i8>::new().take_while(|y| y.abs() < 3) {
+            for x in Shake::<i8>::new().take_while(|x| x.abs() < 3) {
+                let shifted_pos = self.current_block_pos + right(x) + below(y);
+                if is_arrangeable(&self.field, &rotated_block, shifted_pos) {
+                    return Self {
+                        current_block: rotated_block,
+                        current_block_pos: shifted_pos,
+                        ..self
+                    };
+                }
+            }
+        }
+
+        self
     }
 
     pub fn rotate_block_unticlockwise(self) -> Self {
-        unimplemented!()
+        let rotated_block = self.current_block.rotate_unticlockwise();
+
+        for y in Shake::<i8>::new().take_while(|y| y.abs() < 3) {
+            for x in Shake::<i8>::new().take_while(|x| x.abs() < 3) {
+                let shifted_pos = self.current_block_pos + right(x) + below(y);
+                if is_arrangeable(&self.field, &rotated_block, shifted_pos) {
+                    return Self {
+                        current_block: rotated_block,
+                        current_block_pos: shifted_pos,
+                        ..self
+                    };
+                }
+            }
+        }
+
+        self
     }
 }
 
@@ -212,7 +234,10 @@ pub fn is_arrangeable(field: &Field, block: &Block, block_left_top: Pos) -> bool
 /// 指定したブロックを操作ブロックとしてフィールドに登場させる場合，その初期位置(ブロックセル群の左上の座標)を返す．
 pub fn find_block_appearance_pos(field: &Field, block: &Block) -> Option<Pos> {
     for y in -3..0 {
-        for x in -3..13 {
+        for x in Shake::<i8>::new()
+            .map(|x| x + field.width() as i8 / 2)
+            .take(field.width())
+        {
             let pos = Pos::origin() + below(y) + right(x);
             if is_arrangeable(field, block, pos) {
                 return Some(pos);

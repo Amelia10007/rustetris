@@ -21,10 +21,7 @@ pub trait Canvas {
     /// このキャンバスから指定した注目領域を切り抜き，子キャンバスとして返す．
     /// このキャンバスと子キャンバスは状態を共有する．
     /// 子キャンバス上のセルを描画すると，それに対応したこのキャンバスのセルも変更される．
-    /// # Returns
-    /// 子キャンバス`child`を`Some(child)`として返す．
-    /// `roi`がこのキャンバスの範囲内にない場合は`None`を返す．
-    fn child(&mut self, roi: RegionOfInterest) -> Option<ChildCanvas<'_>>;
+    fn child(&mut self, roi: RegionOfInterest) -> ChildCanvas<'_>;
 }
 
 /// 画面全体を描画対象とするキャンバスを表す．
@@ -74,16 +71,8 @@ impl Canvas for RootCanvas {
         Some(())
     }
 
-    fn child(&mut self, roi: RegionOfInterest) -> Option<ChildCanvas<'_>> {
-        let root_roi = RegionOfInterest::new(
-            Pos::origin(),
-            right(CANVAS_WIDTH as i8) + below(CANVAS_HEIHGT as i8),
-        );
-        if root_roi.contains(roi.left_top) && root_roi.contains(roi.right_below()) {
-            Some(ChildCanvas::new(self, roi))
-        } else {
-            None
-        }
+    fn child(&mut self, roi: RegionOfInterest) -> ChildCanvas<'_> {
+        ChildCanvas::new(self, roi)
     }
 }
 
@@ -112,15 +101,10 @@ impl<'root> Canvas for ChildCanvas<'root> {
         }
     }
 
-    fn child(&mut self, roi: RegionOfInterest) -> Option<ChildCanvas<'_>> {
-        let diff = roi.left_top - Pos::origin();
-        let left_top = self.roi.left_top + diff;
+    fn child(&mut self, roi: RegionOfInterest) -> ChildCanvas<'_> {
+        let left_top = self.roi.left_top + (roi.left_top - Pos::origin());
         let roi = RegionOfInterest::new(left_top, roi.size);
-        if self.roi.contains(roi.left_top) && self.roi.contains(roi.right_below()) {
-            Some(ChildCanvas::new(self.root_canvas, roi))
-        } else {
-            None
-        }
+        ChildCanvas::new(self.root_canvas, roi)
     }
 }
 
@@ -141,9 +125,8 @@ pub trait Drawable {
     /// 指定した位置にこの物体を描画する．
     fn draw_on_child<C: Canvas>(&self, left_top: Pos, parent_canvas: &mut C) {
         let roi = self.get_roi(left_top);
-        if let Some(mut child_canvas) = parent_canvas.child(roi) {
-            self.draw(&mut child_canvas);
-        }
+        let mut child_canvas = parent_canvas.child(roi);
+        self.draw(&mut child_canvas);
     }
 }
 
@@ -194,22 +177,9 @@ mod tests_root_canvas {
         let size = right(5) + below(6);
         let roi = RegionOfInterest::new(pos, size);
 
-        let child = root_canvas.child(roi).unwrap();
+        let child = root_canvas.child(roi);
 
         assert_eq!(roi, child.roi);
-    }
-
-    #[test]
-    fn test_child_out_of_roi() {
-        let mut root_canvas = RootCanvas::new();
-        let pos = Pos::origin() + right(1) + below(1);
-        let size = right(CANVAS_WIDTH as i8) + below(6);
-        let roi = RegionOfInterest::new(pos, size);
-        assert!(root_canvas.child(roi).is_none());
-
-        let size = right(3) + below(CANVAS_HEIHGT as i8);
-        let roi = RegionOfInterest::new(pos, size);
-        assert!(root_canvas.child(roi).is_none());
     }
 }
 
@@ -226,7 +196,7 @@ mod tests_child_canvas {
         let size = right(10) + below(10);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut child = root_canvas.child(roi).unwrap();
+        let mut child = root_canvas.child(roi);
         let cell = {
             let c = SquareChar::new('a', 'a');
             let color = CanvasCellColor::new(Color::White, Color::Cyan);
@@ -250,7 +220,7 @@ mod tests_child_canvas {
         let size = right(5) + below(10);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut child = root_canvas.child(roi).unwrap();
+        let mut child = root_canvas.child(roi);
         let cell = {
             let c = SquareChar::new('a', 'a');
             let color = CanvasCellColor::new(Color::White, Color::Cyan);
@@ -285,7 +255,7 @@ mod tests_child_canvas {
         let size = right(5) + below(10);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut child = root_canvas.child(roi).unwrap();
+        let mut child = root_canvas.child(roi);
         let cell = {
             let c = SquareChar::new('a', 'a');
             let color = CanvasCellColor::new(Color::White, Color::Cyan);
@@ -320,7 +290,7 @@ mod tests_child_canvas {
         let size = right(5) + below(10);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut child = root_canvas.child(roi).unwrap();
+        let mut child = root_canvas.child(roi);
         let cell = {
             let c = SquareChar::new('a', 'a');
             let color = CanvasCellColor::new(Color::White, Color::Cyan);
@@ -355,7 +325,7 @@ mod tests_child_canvas {
         let size = right(5) + below(10);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut child = root_canvas.child(roi).unwrap();
+        let mut child = root_canvas.child(roi);
         let cell = {
             let c = SquareChar::new('a', 'a');
             let color = CanvasCellColor::new(Color::White, Color::Cyan);
@@ -382,26 +352,6 @@ mod tests_child_canvas {
     }
 
     #[test]
-    fn test_grandchild_out_of_child_roi() {
-        let mut root_canvas = RootCanvas::new();
-
-        // 子キャンバスを作る
-        let pos = Pos::origin() + right(2) + below(3);
-        let size = right(5) + below(10);
-        let roi = RegionOfInterest::new(pos, size);
-
-        let mut child = root_canvas.child(roi).unwrap();
-
-        // 孫キャンバスをつくる．
-        // しかしこれは子キャンバスのROI外であるため，失敗する．
-        let pos = Pos::origin() + right(2) + below(3);
-        let size = right(4) + below(5);
-        let roi = RegionOfInterest::new(pos, size);
-
-        assert!(child.child(roi).is_none());
-    }
-
-    #[test]
     fn test_child_draw_cell() {
         let mut root_canvas = RootCanvas::new();
 
@@ -410,14 +360,14 @@ mod tests_child_canvas {
         let size = right(5) + below(10);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut child = root_canvas.child(roi).unwrap();
+        let mut child = root_canvas.child(roi);
 
         // 孫キャンバスをつくる
         let pos = Pos::origin() + right(2) + below(3);
         let size = right(3) + below(4);
         let roi = RegionOfInterest::new(pos, size);
 
-        let mut grandchild = child.child(roi).unwrap();
+        let mut grandchild = child.child(roi);
 
         assert_eq!(PosX::right(2 + 2), grandchild.roi.left_top.x());
         assert_eq!(PosY::below(3 + 3), grandchild.roi.left_top.y());

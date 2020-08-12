@@ -27,6 +27,14 @@ impl Field {
         }
     }
 
+    pub const fn width(&self) -> usize {
+        WIDTH
+    }
+
+    pub const fn height(&self) -> usize {
+        HEIGHT
+    }
+
     /// 指定した位置のセルへの参照を返す．
     /// # Returns
     /// 1. 指定した位置にセルが存在する場合は`Some(cell)`を返す．
