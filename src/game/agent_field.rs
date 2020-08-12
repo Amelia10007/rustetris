@@ -100,9 +100,10 @@ impl AgentField {
 
     pub fn rotate_block_clockwise(self) -> Self {
         let rotated_block = self.current_block.rotate_clockwise();
+        let shift_max = self.current_block.cell_table_size() as i8 / 2;
 
-        for y in Shake::<i8>::new().take_while(|y| y.abs() < 3) {
-            for x in Shake::<i8>::new().take_while(|x| x.abs() < 3) {
+        for y in Shake::<i8>::new().take_while(|y| y.abs() <= shift_max) {
+            for x in Shake::<i8>::new().take_while(|x| x.abs() <= shift_max) {
                 let shifted_pos = self.current_block_pos + right(x) + below(y);
                 if is_arrangeable(&self.field, &rotated_block, shifted_pos) {
                     return Self {
@@ -119,9 +120,10 @@ impl AgentField {
 
     pub fn rotate_block_unticlockwise(self) -> Self {
         let rotated_block = self.current_block.rotate_unticlockwise();
+        let shift_max = self.current_block.cell_table_size() as i8 / 2;
 
-        for y in Shake::<i8>::new().take_while(|y| y.abs() < 3) {
-            for x in Shake::<i8>::new().take_while(|x| x.abs() < 3) {
+        for y in Shake::<i8>::new().take_while(|y| y.abs() <= shift_max) {
+            for x in Shake::<i8>::new().take_while(|x| x.abs() <= shift_max) {
                 let shifted_pos = self.current_block_pos + right(x) + below(y);
                 if is_arrangeable(&self.field, &rotated_block, shifted_pos) {
                     return Self {
@@ -134,6 +136,10 @@ impl AgentField {
         }
 
         self
+    }
+
+    pub fn hold_block(self) -> Self {
+        unimplemented!()
     }
 }
 
@@ -233,7 +239,8 @@ pub fn is_arrangeable(field: &Field, block: &Block, block_left_top: Pos) -> bool
 
 /// 指定したブロックを操作ブロックとしてフィールドに登場させる場合，その初期位置(ブロックセル群の左上の座標)を返す．
 pub fn find_block_appearance_pos(field: &Field, block: &Block) -> Option<Pos> {
-    for y in -3..0 {
+    let shift_max = block.cell_table_size() as i8 / 2;
+    for y in -shift_max..0 {
         for x in Shake::<i8>::new()
             .map(|x| x + field.width() as i8 / 2)
             .take(field.width())

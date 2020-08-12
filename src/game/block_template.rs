@@ -276,6 +276,10 @@ impl Block {
         }
     }
 
+    pub const fn cell_table_size(&self)->usize{
+        BLOCK_TABLE_SIZE
+    }
+
     /// このブロックを構成する，空でないすべてのセルとその位置を列挙する．
     pub fn iter_pos_and_occupied_cell(&self) -> impl Iterator<Item = (Pos, &Cell)> + '_ {
         self.cells.iter().enumerate().flat_map(|(y, row)| {
