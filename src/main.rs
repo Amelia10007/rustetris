@@ -23,7 +23,13 @@ fn main() {
     loop {
         use user::GameCommand::*;
 
-        let game_command = match term.read_key().ok().and_then(|key| input_mapper.map(key)) {
+        let key = match term.read_key() {
+            Ok(console::Key::Char('q')) => break,
+            Ok(key) => key,
+            Err(_) => continue,
+        };
+
+        let game_command = match input_mapper.map(key) {
             Some(command) => command,
             None => continue,
         };
