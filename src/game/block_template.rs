@@ -205,13 +205,13 @@ enum CellTag {
 /// ブロック生成ルールを表す．
 pub trait BlockSelector {
     /// ブロックの形状を返す．
-    fn select_block_shape(&self) -> BlockShape;
+    fn select_block_shape(&mut self) -> BlockShape;
 
     /// ボムセルの数および位置を返す．
-    fn select_bomb(&self, shape: BlockShape) -> BombTag;
+    fn select_bomb(&mut self, shape: BlockShape) -> BombTag;
 
     /// ブロックを生成して返す．
-    fn generate_block(&self) -> Block {
+    fn generate_block(&mut self) -> Block {
         let shape = self.select_block_shape();
         let bomb = self.select_bomb(shape);
         // 形状に合致したテーブルを取得

@@ -15,7 +15,7 @@ fn main() {
 
     let mut buffer = String::new();
 
-    let block_selector = BlockFactory;
+    let mut block_selector = BlockFactory;
     let mut block = block_selector.generate_block();
     let field = game::Field::empty();
 
@@ -44,11 +44,11 @@ fn main() {
 struct BlockFactory;
 
 impl BlockSelector for BlockFactory {
-    fn select_block_shape(&self) -> game::BlockShape {
+    fn select_block_shape(&mut self) -> game::BlockShape {
         game::QuadrupleBlockShape::J.into()
     }
 
-    fn select_bomb(&self, _shape: game::BlockShape) -> game::BombTag {
+    fn select_bomb(&mut self, _shape: game::BlockShape) -> game::BombTag {
         game::BombTag::None
     }
 }
