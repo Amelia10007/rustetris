@@ -276,7 +276,9 @@ impl Block {
         }
     }
 
-    pub const fn cell_table_size(&self)->usize{
+    /// ブロックのセルテーブルのサイズを返す．
+    /// ブロックを構成するセルは正方形状に配置されており，このメソッドはその正方形のサイズを返す．
+    pub const fn cell_table_size(&self) -> usize {
         BLOCK_TABLE_SIZE
     }
 
@@ -1353,6 +1355,16 @@ mod block_template {
 mod tests {
     use super::Cell::{Bomb, Empty, Normal};
     use super::*;
+
+    #[test]
+    fn test_cell_table_size() {
+        let block = Block::new(
+            block_template::get_cell_tag_collection(QuadrupleBlockShape::O.into()),
+            Direction::Above,
+            BombTag::None,
+        );
+        assert_eq!(5, block.cell_table_size());
+    }
 
     #[test]
     fn test_cells_without_bomb() {

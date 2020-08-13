@@ -27,10 +27,12 @@ impl Field {
         }
     }
 
+    /// このフィールドの横方向のセル数を返す．
     pub const fn width(&self) -> usize {
         WIDTH
     }
 
+    /// このフィールドの縦方向のセル数を返す．
     pub const fn height(&self) -> usize {
         HEIGHT
     }
@@ -165,6 +167,18 @@ mod tests {
                 assert_eq!(Cell::Empty, cell);
             }
         }
+    }
+
+    #[test]
+    fn test_width() {
+        let field = Field::empty();
+        assert_eq!(10, field.width());
+    }
+
+    #[test]
+    fn test_height() {
+        let field = Field::empty();
+        assert_eq!(20, field.height());
     }
 
     #[test]

@@ -34,14 +34,14 @@ fn main() {
             None => continue,
         };
 
-        let next_agent_field = match game_command {
+        let (next_agent_field, _operation_result) = match game_command {
             Left => agent_field.move_block_to_left(),
             Right => agent_field.move_block_to_right(),
             Down => agent_field.move_block_down(),
             Drop => agent_field.drop_block(),
             RotateClockwise => agent_field.rotate_block_clockwise(),
             RotateUnticlockwise => agent_field.rotate_block_unticlockwise(),
-            _ => agent_field,
+            Hold => agent_field.hold_block(),
         };
 
         agent_field = next_agent_field;
