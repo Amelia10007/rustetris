@@ -51,6 +51,7 @@ impl AgentField {
         }
     }
 
+    /// 現在の操作ブロックを1マスだけ左へ移動させる．
     pub fn move_block_to_left(self) -> (Self, OperationResult) {
         let next_pos = self.current_block_pos + left(1);
         if is_arrangeable(&self.field, &self.current_block, next_pos) {
@@ -64,6 +65,7 @@ impl AgentField {
         }
     }
 
+    /// 現在の操作ブロックを1マスだけ右へ移動させる．
     pub fn move_block_to_right(self) -> (Self, OperationResult) {
         let next_pos = self.current_block_pos + right(1);
         if is_arrangeable(&self.field, &self.current_block, next_pos) {
@@ -77,6 +79,7 @@ impl AgentField {
         }
     }
 
+    /// 現在の操作ブロックを1マスだけ下へ移動させる．
     pub fn move_block_down(self) -> (Self, OperationResult) {
         let next_pos = self.current_block_pos + below(1);
         if is_arrangeable(&self.field, &self.current_block, next_pos) {
@@ -90,6 +93,7 @@ impl AgentField {
         }
     }
 
+    /// 現在の操作ブロックを可能な限り真下に落下させる．
     pub fn drop_block(self) -> (Self, OperationResult) {
         let mut drop_shift = 0;
 
@@ -110,6 +114,7 @@ impl AgentField {
         (next_state, OperationResult::Done)
     }
 
+    /// 現在の操作ブロックを90度だけ時計回りに回転させる．
     pub fn rotate_block_clockwise(self) -> (Self, OperationResult) {
         let rotated_block = self.current_block.rotate_clockwise();
         let shift_max = self.current_block.cell_table_size() as i8 / 2;
@@ -131,6 +136,7 @@ impl AgentField {
         (self, OperationResult::Stay)
     }
 
+    /// 現在の操作ブロックを90度だけ反時計回りに回転させる．
     pub fn rotate_block_unticlockwise(self) -> (Self, OperationResult) {
         let rotated_block = self.current_block.rotate_unticlockwise();
         let shift_max = self.current_block.cell_table_size() as i8 / 2;
@@ -152,6 +158,7 @@ impl AgentField {
         (self, OperationResult::Stay)
     }
 
+    /// 現在の操作ブロックとHoldブロックを交換する．
     pub fn hold_block(self) -> (Self, OperationResult) {
         let (current_block, hold_block) = (self.hold_block, self.current_block);
 
@@ -273,7 +280,7 @@ pub fn find_block_appearance_pos(field: &Field, block: &Block) -> Option<Pos> {
     let shift_max = block.cell_table_size() as i8 / 2;
     for y in -shift_max..0 {
         for x in Shake::<i8>::new()
-            .map(|x| x + field.width() as i8 / 2)
+            .map(|x| x + field.width() as i8 / 2 - block.cell_table_size() as i8 / 2)
             .take(field.width())
         {
             let pos = Pos::origin() + below(y) + right(x);
