@@ -14,9 +14,9 @@ fn main() {
 
     let input_mapper = user::SinglePlayerInputMapper;
 
-    let mut block_selector = BlockFactory;
+    let mut block_selector = QuadrupleBlockGenerator { current_index: 0 };
 
-    let mut agent_field = game::AgentField::new(&mut block_selector);
+    let mut agent_field = game::FieldUnderAgentControl::new(&mut block_selector);
 
     let mut buffer = String::new();
 
@@ -57,14 +57,22 @@ fn main() {
     }
 }
 
-struct BlockFactory;
+struct QuadrupleBlockGenerator {
+    current_index: usize,
+}
 
-impl BlockSelector for BlockFactory {
+impl BlockSelector for QuadrupleBlockGenerator {
     fn select_block_shape(&mut self) -> game::BlockShape {
-        game::QuadrupleBlockShape::J.into()
+        use game::QuadrupleBlockShape::*;
+
+        let shapes = [O, J, L, Z, S, T, I];
+
+        let shape = shapes[self.current_index % shapes.len()];
+        self.current_index = (self.current_index + 1) % shapes.len();
+        shape.into()
     }
 
-    fn select_bomb(&mut self, _shape: game::BlockShape) -> game::BombTag {
-        game::BombTag::None
+    fn select_bomb(&mut self, _: game::BlockShape) -> game::BombTag {
+        game::BombTag::Single(0)
     }
 }

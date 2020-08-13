@@ -21,7 +21,7 @@ pub enum OperationResult {
 
 /// エージェントの操作対象となるフィールドを表す．
 #[derive(Debug)]
-pub struct AgentField {
+pub struct FieldUnderAgentControl {
     /// セルが配置されたフィールド．
     field: Field,
     /// 現在エージェントの操作対象となっているブロック．
@@ -33,9 +33,9 @@ pub struct AgentField {
     hold_block: Block,
 }
 
-impl AgentField {
+impl FieldUnderAgentControl {
     /// 指定したブロック生成器を用いてフィールドを初期化する．
-    pub fn new<S: BlockSelector>(selector: &mut S) -> AgentField {
+    pub fn new<S: BlockSelector>(selector: &mut S) -> FieldUnderAgentControl {
         let field = Field::empty();
         let current_block = selector.generate_block();
         let current_block_pos = find_block_appearance_pos(&field, &current_block).unwrap();
@@ -177,7 +177,7 @@ impl AgentField {
     }
 }
 
-impl Drawable for AgentField {
+impl Drawable for FieldUnderAgentControl {
     fn region_size(&self) -> Movement {
         // フィールド用
         let field_region_size = self.field.region_size();

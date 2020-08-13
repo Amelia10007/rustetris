@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 
-mod agent_field;
 mod block_template;
 mod cell;
 mod field;
+mod field_under_agent_control;
 mod single_play;
 
-pub use agent_field::AgentField;
 pub use block_template::*;
 pub use cell::Cell;
 pub use field::Field;
+pub use field_under_agent_control::FieldUnderAgentControl;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Progress {
