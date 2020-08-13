@@ -1,14 +1,12 @@
 use std::marker::PhantomData;
 
 mod agent_field;
-mod block;
 mod block_template;
 mod cell;
 mod field;
 mod single_play;
 
 pub use agent_field::AgentField;
-pub use block::ControlledBlock;
 pub use block_template::*;
 pub use cell::Cell;
 pub use field::Field;
