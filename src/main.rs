@@ -4,56 +4,52 @@ mod geometry;
 mod graphics;
 mod user;
 
-use game::BlockSelector;
-use geometry::*;
+use game::*;
 use graphics::*;
 
 fn main() {
-    let mut canvas = RootCanvas::new();
-    let term = console::Term::buffered_stdout();
+    let terminal = console::Term::buffered_stdout();
+
+    let mut drawer = StdoutDrawer {
+        terminal: &terminal,
+        root_canvas: RootCanvas::new(),
+    };
 
     let input_mapper = user::SinglePlayerInputMapper;
 
-    let mut block_selector = QuadrupleBlockGenerator { current_index: 0 };
+    let input = || loop {
+        if let Ok(key) = terminal.read_key() {
+            if let Some(command) = input_mapper.map(key) {
+                break command;
+            }
+        }
+    };
 
-    let mut agent_field = game::FieldUnderAgentControl::new(&mut block_selector);
+    game::single_play::execute_game(input, &mut drawer);
+}
 
-    let mut buffer = String::new();
+struct StdoutDrawer<'t> {
+    terminal: &'t console::Term,
+    root_canvas: RootCanvas,
+}
 
-    loop {
-        use user::GameCommand::*;
+impl<'t> crate::game::field_animation::Drawer for StdoutDrawer<'t> {
+    type Canvas = RootCanvas;
 
-        let key = match term.read_key() {
-            Ok(console::Key::Char('q')) => break,
-            Ok(key) => key,
-            Err(_) => continue,
-        };
+    fn canvas_mut(&mut self) -> &mut Self::Canvas {
+        &mut self.root_canvas
+    }
 
-        let game_command = match input_mapper.map(key) {
-            Some(command) => command,
-            None => continue,
-        };
+    fn clear(&mut self) {
+        self.root_canvas.clear();
+        self.terminal.clear_screen().unwrap();
+    }
 
-        let (next_agent_field, _operation_result) = match game_command {
-            Left => agent_field.move_block_to_left(),
-            Right => agent_field.move_block_to_right(),
-            Down => agent_field.move_block_down(),
-            Drop => agent_field.drop_block(),
-            RotateClockwise => agent_field.rotate_block_clockwise(),
-            RotateUnticlockwise => agent_field.rotate_block_unticlockwise(),
-            Hold => agent_field.hold_block(),
-        };
-
-        agent_field = next_agent_field;
-
-        canvas.clear();
-
-        agent_field.draw_on_child(Pos::origin(), &mut canvas);
-
-        term.clear_screen().unwrap();
-        canvas.construct_output_string(&mut buffer);
-        term.write_str(&buffer).unwrap();
-        term.flush().unwrap();
+    fn show(&mut self) {
+        let mut buffer = String::new();
+        self.root_canvas.construct_output_string(&mut buffer);
+        self.terminal.write_str(&buffer).unwrap();
+        self.terminal.flush().unwrap();
     }
 }
 
