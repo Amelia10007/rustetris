@@ -4,7 +4,7 @@ mod geometry;
 mod graphics;
 mod user;
 
-use game::*;
+use game::field_animation::Drawer;
 use graphics::*;
 
 fn main() {
@@ -33,7 +33,7 @@ struct StdoutDrawer<'t> {
     root_canvas: RootCanvas,
 }
 
-impl<'t> crate::game::field_animation::Drawer for StdoutDrawer<'t> {
+impl<'t> Drawer for StdoutDrawer<'t> {
     type Canvas = RootCanvas;
 
     fn canvas_mut(&mut self) -> &mut Self::Canvas {
@@ -50,25 +50,5 @@ impl<'t> crate::game::field_animation::Drawer for StdoutDrawer<'t> {
         self.root_canvas.construct_output_string(&mut buffer);
         self.terminal.write_str(&buffer).unwrap();
         self.terminal.flush().unwrap();
-    }
-}
-
-struct QuadrupleBlockGenerator {
-    current_index: usize,
-}
-
-impl BlockSelector for QuadrupleBlockGenerator {
-    fn select_block_shape(&mut self) -> game::BlockShape {
-        use game::QuadrupleBlockShape::*;
-
-        let shapes = [O, J, L, Z, S, T, I];
-
-        let shape = shapes[self.current_index % shapes.len()];
-        self.current_index = (self.current_index + 1) % shapes.len();
-        shape.into()
-    }
-
-    fn select_bomb(&mut self, _: game::BlockShape) -> game::BombTag {
-        game::BombTag::Single(0)
     }
 }
