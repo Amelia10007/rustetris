@@ -33,7 +33,7 @@ impl Cell {
         use Cell::*;
 
         match self {
-            Empty => SquareChar::new(' ', ' '),
+            Empty => SquareChar::new(' ', '.'),
             Normal => SquareChar::new('[', ']'),
             Bomb => SquareChar::new('[', ']'),
             BigBombUpperLeft | BigBombPart => SquareChar::new('[', ']'),
