@@ -1,6 +1,7 @@
 use super::{BlockQueue, Field};
 use crate::geometry::*;
 use crate::graphics::*;
+use itertools::Itertools;
 
 /// アニメーション表示用のフィールドを表す．
 pub struct AnimationField {
@@ -72,7 +73,7 @@ impl AnimationFrame {
         if self.current == self.end {
             None
         } else {
-            std::thread::sleep(std::time::Duration::from_millis(100));
+            std::thread::sleep(std::time::Duration::from_millis(50));
             let next = Self {
                 current: self.current + 1,
                 end: self.end,
@@ -167,24 +168,116 @@ impl Animation for PlaceBlock {
         self.field.draw(canvas);
     }
 }
-/*
+
 pub struct FullRowAnimation {
     field: AnimationField,
     filled_rows: Vec<PosY>,
+    current_counts: Vec<LimitedCounter>,
 }
 
 impl FullRowAnimation {
     pub fn new(field: AnimationField, previous_filled_rows: &[PosY]) -> FullRowAnimation {
-        let filled_rows = field
+        let filled_row_ys = field
             .field
             .rows()
             .enumerate()
             .map(|(y, row)| (PosY::below(y as i8), row))
             .filter(|(_y, row)| row.iter().all(|cell| !cell.is_empty()))
             .map(|(y, _row)| y)
-            .filter(|y| !previous_filled_rows.contains(&y))
             .collect::<Vec<_>>();
 
-        Self { field, filled_rows }
+        let ys = if &filled_row_ys[..] == previous_filled_rows {
+            vec![]
+        } else {
+            filled_row_ys
+        };
+
+        let current_counts = vec![LimitedCounter::new(field.field.width()); ys.len()];
+
+        Self {
+            field,
+            filled_rows: ys,
+            current_counts,
+        }
     }
-}*/
+}
+
+impl Animation for FullRowAnimation {
+    type Finished = (AnimationField, Vec<PosY>);
+
+    fn wait_next(mut self) -> AnimationResult<Self, Self::Finished> {
+        AnimationFrame::with_frame_count(1).wait_next();
+        if self.current_counts.is_empty() || self.current_counts.iter().all(|c| c.is_in_limit()) {
+            AnimationResult::Finished((self.field, self.filled_rows))
+        } else {
+            // 先頭のカウントを増やす
+            self.current_counts[0].next();
+            // 上段の揃ったラインの描画か終わったらこのラインの描画も開始
+            for i in 1..self.current_counts.len() {
+                let previous = &self.current_counts[i - 1];
+                if previous.count > self.field.field.width() / 2 {
+                    self.current_counts[i].next();
+                }
+            }
+
+            AnimationResult::InProgress(self)
+        }
+    }
+
+    fn draw<C: Canvas>(&self, canvas: &mut C) {
+        self.field.draw(canvas);
+
+        for (i, (count, &y)) in self
+            .current_counts
+            .iter()
+            .zip(self.filled_rows.iter())
+            .enumerate()
+        {
+            // 揃ったところに横線描画
+            if !count.is_in_limit() {
+                for i in 0..count.count {
+                    let x = PosX::right(i as i8);
+                    let pos = Pos(x, y);
+                    let colored_str = {
+                        let color = CanvasCellColor::new(Color::White, Color::Black);
+                        ColoredStr("--", color)
+                    };
+                    colored_str.draw_on_child(pos, canvas);
+                }
+            }
+            // 揃ったラインの右に，合計何列揃ったのか描画
+            if count.count >= self.field.field.width() / 2 {
+                let x = PosX::right(self.field.field.width() as i8);
+                let pos = Pos(x, y);
+                let colored_str = {
+                    let color = CanvasCellColor::new(Color::White, Color::Black);
+                    ColoredStr(i.to_string(), color)
+                };
+                colored_str.draw_on_child(pos, canvas);
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct LimitedCounter {
+    count: usize,
+    max: usize,
+}
+
+impl LimitedCounter {
+    fn new(max: usize) -> LimitedCounter {
+        Self { count: 0, max }
+    }
+
+    fn next(&mut self) {
+        if self.count < self.max {
+            self.count += 1;
+        }
+    }
+
+    fn is_in_limit(&self) -> bool {
+        debug_assert!(self.count <= self.max);
+        self.count == self.max
+    }
+}

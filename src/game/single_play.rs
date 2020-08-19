@@ -1,4 +1,4 @@
-use super::field_animation::{Animation, AnimationField, Drawer, PlaceBlock};
+use super::field_animation::{Animation, AnimationField, Drawer, FullRowAnimation, PlaceBlock};
 use super::field_under_agent_control::FieldUnderAgentControl;
 use super::{BlockQueue, BlockSelector, BlockShape, BombTag, Field};
 use crate::graphics::*;
@@ -40,6 +40,7 @@ where
 
     let mut field = Field::empty();
     let mut block_queue = BlockQueue::new(&mut block_generator);
+    let mut filled_row_ys = vec![];
 
     loop {
         let mut agent_field =
@@ -71,8 +72,14 @@ where
         // アニメーション実行
         let finished_animation_field = place_block_animation.execute(drawer);
 
+        let full_row_animation = FullRowAnimation::new(finished_animation_field, &filled_row_ys);
+        let (finished_animation_field, mut ys) = full_row_animation.execute(drawer);
+
         // 次の操作のためにフィールドとキューを更新
         field = finished_animation_field.field;
         block_queue = finished_animation_field.block_queue;
+        filled_row_ys.append(&mut ys);
+        filled_row_ys.sort();
+        filled_row_ys.dedup();
     }
 }
