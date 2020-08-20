@@ -49,7 +49,6 @@ impl Animation for FullRow {
             self.counters[0].next();
             // 上段の揃ったラインの描画か終わったらこのラインの描画も開始
             for i in 1..self.counters.len() {
-                let previous = &self.counters[i - 1];
                 if self.counters[i - 1].is_ended() {
                     self.counters[i].next();
                 }
