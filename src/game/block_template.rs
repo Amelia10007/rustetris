@@ -284,15 +284,8 @@ impl Block {
 
     /// このブロックを構成する，空でないすべてのセルとその位置を列挙する．
     pub fn iter_pos_and_occupied_cell(&self) -> impl Iterator<Item = (Pos, &Cell)> + '_ {
-        self.cells.iter().enumerate().flat_map(|(y, row)| {
-            row.iter()
-                .enumerate()
-                .map(move |(x, cell)| {
-                    let p = Pos(PosX::right(x as i8), PosY::below(y as i8));
-                    (p, cell)
-                })
-                .filter(|(_, &cell)| cell != Cell::Empty)
-        })
+        self.iter_pos_and_cell()
+            .filter(|(_, &cell)| !cell.is_empty())
     }
 
     /// このブロックを構成する，すべてのセルとその位置を列挙する．

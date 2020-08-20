@@ -1,4 +1,4 @@
-use super::field_animation::{Animation, AnimationField, Drawer, FullRowAnimation, PlaceBlock};
+use super::animation::{Animation, AnimationField, Drawer, FullRow, PlaceBlock};
 use super::field_under_agent_control::FieldUnderAgentControl;
 use super::{BlockQueue, BlockSelector, BlockShape, BombTag, Field};
 use crate::graphics::*;
@@ -72,7 +72,7 @@ where
         // アニメーション実行
         let finished_animation_field = place_block_animation.execute(drawer);
 
-        let full_row_animation = FullRowAnimation::new(finished_animation_field, &filled_row_ys);
+        let full_row_animation = FullRow::new(finished_animation_field, &filled_row_ys);
         let (finished_animation_field, mut ys) = full_row_animation.execute(drawer);
 
         // 次の操作のためにフィールドとキューを更新

@@ -4,7 +4,7 @@ mod geometry;
 mod graphics;
 mod user;
 
-use game::field_animation::Drawer;
+use game::animation::Drawer;
 use graphics::*;
 
 fn main() {

@@ -2,7 +2,7 @@ mod block_queue;
 mod block_template;
 mod cell;
 mod field;
-pub mod field_animation;
+pub mod animation;
 pub mod field_under_agent_control;
 pub mod single_play;
 
