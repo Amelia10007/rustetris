@@ -230,8 +230,8 @@ mod tests {
         assert_eq!(Some(&Cell::BigBombUpperLeft), field.get(lower_left));
         // 右下
         let lower_right = p + right(WIDTH as i8 - 1) + below(HEIGHT as i8 - 1);
-        *field.get_mut(lower_right).unwrap() = Cell::BigBombPart;
-        assert_eq!(Some(&Cell::BigBombPart), field.get(lower_right));
+        *field.get_mut(lower_right).unwrap() = Cell::BigBombUpperRight;
+        assert_eq!(Some(&Cell::BigBombUpperRight), field.get(lower_right));
 
         // 正のx方向にはみ出た座標
         let outer_positive_x = p + right(WIDTH as i8);

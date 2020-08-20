@@ -14,8 +14,12 @@ pub enum Cell {
     Bomb,
     /// デカボムの左上を表すセル．
     BigBombUpperLeft,
-    /// デカボムの左上以外に割り当てられるセル．
-    BigBombPart,
+    /// デカボムの右上に割り当てられるセル．
+    BigBombUpperRight,
+    /// デカボムの左下を表すセル．
+    BigBombLowerLeft,
+    /// デカボムの右下に割り当てられるセル．
+    BigBombLowerRight,
 }
 
 impl Cell {
@@ -36,7 +40,9 @@ impl Cell {
             Empty => SquareChar::new(' ', '.'),
             Normal => SquareChar::new('[', ']'),
             Bomb => SquareChar::new('[', ']'),
-            BigBombUpperLeft | BigBombPart => SquareChar::new('[', ']'),
+            BigBombUpperLeft | BigBombUpperRight | BigBombLowerLeft | BigBombLowerRight => {
+                SquareChar::new('=', '=')
+            }
         }
     }
 
@@ -48,7 +54,9 @@ impl Cell {
             Empty => CanvasCellColor::new(White, Black),
             Normal => CanvasCellColor::new(Cyan, Black),
             Bomb => CanvasCellColor::new(Red, Black),
-            BigBombUpperLeft | BigBombPart => CanvasCellColor::new(White, Red),
+            BigBombUpperLeft | BigBombUpperRight | BigBombLowerLeft | BigBombLowerRight => {
+                CanvasCellColor::new(White, Red)
+            }
         }
     }
 
@@ -69,14 +77,16 @@ impl Drawable for Cell {
 
 #[cfg(test)]
 mod tests {
-    use super::Cell;
+    use super::Cell::*;
 
     #[test]
     fn test_is_empty() {
-        assert!(Cell::Empty.is_empty());
-        assert!(!Cell::Normal.is_empty());
-        assert!(!Cell::Bomb.is_empty());
-        assert!(!Cell::BigBombUpperLeft.is_empty());
-        assert!(!Cell::BigBombPart.is_empty());
+        assert!(Empty.is_empty());
+        assert!(!Normal.is_empty());
+        assert!(!Bomb.is_empty());
+        assert!(!BigBombUpperLeft.is_empty());
+        assert!(!BigBombUpperRight.is_empty());
+        assert!(!BigBombLowerLeft.is_empty());
+        assert!(!BigBombLowerRight.is_empty());
     }
 }
