@@ -1,4 +1,4 @@
-use crate::geometry::*;
+use super::*;
 
 /// 注目領域ROI(Region of interest)を表す．
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
