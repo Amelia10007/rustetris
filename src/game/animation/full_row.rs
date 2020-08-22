@@ -90,7 +90,7 @@ impl Animation for FullRow {
                 let pos = Pos(x, y);
                 let colored_str = {
                     let color = CanvasCellColor::new(Color::White, Color::Black);
-                    ColoredStr(i.to_string(), color)
+                    ColoredStr((i + 1).to_string(), color)
                 };
                 colored_str.draw_on_child(pos, canvas);
             }
