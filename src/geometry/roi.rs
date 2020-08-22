@@ -32,6 +32,21 @@ impl RegionOfInterest {
             && pos.y() >= self.left_top.y()
             && pos.y() < right_below.y()
     }
+
+    /// このROIに含まれる格子点を列挙する．
+    /// このメソッドで返される`iterator`は，まずROIの左上の座標を返し，順に右側の座標を返していく．
+    /// 最上行の列挙が終わった後，続けて2行目の点を左端から右端へ順に列挙する．
+    /// この操作を最下行まで繰り返す．
+    pub fn iter_pos(&self) -> impl IntoIterator<Item = Pos> {
+        let width = self.size.x().as_positive_index().unwrap();
+        let height = self.size.y().as_positive_index().unwrap();
+        let left_top = self.left_top;
+        (0..height).map(|y| below(y as i8)).flat_map(move |y| {
+            (0..width)
+                .map(|x| right(x as i8))
+                .map(move |x| left_top + x + y)
+        })
+    }
 }
 
 #[cfg(test)]
@@ -88,5 +103,21 @@ mod tests {
         assert!(!roi.contains(left_top + above(1)));
         assert!(!roi.contains(roi.right_below() + right(1)));
         assert!(!roi.contains(roi.right_below() + below(1)));
+    }
+
+    #[test]
+    fn test_iter_pos() {
+        let left_top = Pos(PosX::right(4), PosY::below(5));
+        let size = right(2) + below(3);
+        let roi = RegionOfInterest::new(left_top, size);
+        let mut iter = roi.iter_pos().into_iter();
+
+        assert_eq!(Some(Pos::origin() + right(4) + below(5)), iter.next());
+        assert_eq!(Some(Pos::origin() + right(5) + below(5)), iter.next());
+        assert_eq!(Some(Pos::origin() + right(4) + below(6)), iter.next());
+        assert_eq!(Some(Pos::origin() + right(5) + below(6)), iter.next());
+        assert_eq!(Some(Pos::origin() + right(4) + below(7)), iter.next());
+        assert_eq!(Some(Pos::origin() + right(5) + below(7)), iter.next());
+        assert!(iter.next().is_none());
     }
 }
