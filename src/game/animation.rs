@@ -1,3 +1,4 @@
+mod explosion;
 mod full_row;
 mod place_block;
 
