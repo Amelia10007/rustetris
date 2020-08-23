@@ -1,4 +1,7 @@
-use super::animation::{Animation, AnimationField, Drawer, FullRow, PlaceBlock};
+use super::animation::{
+    Animation, AnimationField, ChainCounter, Drawer, Explosion, ExplosionInitResult, FullRow,
+    PlaceBlock,
+};
 use super::field_under_agent_control::FieldUnderAgentControl;
 use super::{BlockQueue, BlockSelector, BlockShape, BombTag, Field};
 use crate::graphics::*;
@@ -41,6 +44,7 @@ where
     let mut field = Field::empty();
     let mut block_queue = BlockQueue::new(&mut block_generator);
     let mut filled_row_ys = vec![];
+    let mut explosion_chain = ChainCounter::new();
 
     loop {
         let mut agent_field =
@@ -67,19 +71,33 @@ where
             drawer.show();
         };
 
+        // ブロックを設置アニメーション
         let animation_field = AnimationField::new(confirmed_field, confirmed_block_queue);
         let place_block_animation = PlaceBlock::new(animation_field);
-        // アニメーション実行
         let finished_animation_field = place_block_animation.execute(drawer);
-
+        // ラインが揃ったアニメーション
         let full_row_animation = FullRow::new(finished_animation_field, &filled_row_ys);
         let (finished_animation_field, mut ys) = full_row_animation.execute(drawer);
-
-        // 次の操作のためにフィールドとキューを更新
-        field = finished_animation_field.field;
-        block_queue = finished_animation_field.block_queue;
-        filled_row_ys.append(&mut ys);
-        filled_row_ys.sort();
-        filled_row_ys.dedup();
+        // 必要なら，ラインを消すアニメーション
+        match Explosion::try_init(finished_animation_field, &ys, explosion_chain) {
+            ExplosionInitResult::Explodes(explosion) => {
+                // アニメーション実行
+                let (finished_animation_field, next_chain) = explosion.execute(drawer);
+                // 次の操作のためにフィールドとキューを更新
+                field = finished_animation_field.field;
+                block_queue = finished_animation_field.block_queue;
+                filled_row_ys = vec![];
+                explosion_chain = next_chain;
+            }
+            ExplosionInitResult::Stay(animation_field) => {
+                // 次の操作のためにフィールドとキューを更新
+                field = animation_field.field;
+                block_queue = animation_field.block_queue;
+                filled_row_ys.append(&mut ys);
+                filled_row_ys.sort();
+                filled_row_ys.dedup();
+                explosion_chain = ChainCounter::new();
+            }
+        }
     }
 }

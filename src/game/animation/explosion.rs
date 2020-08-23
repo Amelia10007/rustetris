@@ -22,22 +22,30 @@ impl ChainCounter {
     }
 }
 
+pub enum ExplosionInitResult {
+    Explodes(Explosion),
+    Stay(AnimationField),
+}
+
 pub struct Explosion {
     field: AnimationField,
+    current_chain: ChainCounter,
     exploded_cell_positions: Vec<Pos>,
+    frame: AnimationFrame,
 }
 
 impl Explosion {
-    pub fn new(
+    pub fn try_init(
         field: AnimationField,
-        filled_rows: Vec<PosY>,
+        filled_rows: &[PosY],
         current_chain: ChainCounter,
-    ) -> Explosion {
+    ) -> ExplosionInitResult {
         let filled_row_count = filled_rows.len();
         let exploded_cell_positions = field
             .field
             .rows()
             .enumerate()
+            .filter(|(y, _row)| filled_rows.contains(&PosY::below(*y as i8)))
             .flat_map(move |(y, row)| {
                 row.iter()
                     .enumerate()
@@ -48,23 +56,59 @@ impl Explosion {
             .flat_map(|roi| roi.iter_pos())
             .collect::<Vec<_>>();
 
-        Self {
-            field,
-            exploded_cell_positions,
+        if exploded_cell_positions.is_empty() {
+            ExplosionInitResult::Stay(field)
+        } else {
+            let frame = AnimationFrame::with_frame_count(20);
+            ExplosionInitResult::Explodes(Self {
+                field,
+                current_chain,
+                exploded_cell_positions,
+                frame,
+            })
         }
     }
 }
 
 impl Animation for Explosion {
-    type Finished = AnimationField;
+    type Finished = (AnimationField, ChainCounter);
 
     fn wait_next(mut self) -> AnimationResult<Self, Self::Finished> {
-        unimplemented!()
+        match self.frame.wait_next() {
+            Some(next_frame) => AnimationResult::InProgress(Self {
+                frame: next_frame,
+                ..self
+            }),
+            None => {
+                self.current_chain.next();
+                // 爆発に巻き込まれたセルは空セルになる
+                for exploded_pos in self.exploded_cell_positions.into_iter() {
+                    if let Some(c) = self.field.field.get_mut(exploded_pos) {
+                        *c = Cell::Empty;
+                    }
+                }
+                AnimationResult::Finished((self.field, self.current_chain))
+            }
+        }
     }
 
     fn draw<C: Canvas>(&self, canvas: &mut C) {
+        let explosion_cell = {
+            use Color::*;
+            let color = CanvasCellColor::new(Yellow, Black);
+            let c = if self.frame.current_frame() % 2 == 0 {
+                'x'
+            } else {
+                '+'
+            };
+            CanvasCell::new(SquareChar::new(c, c), color)
+        };
+
         self.field.draw(canvas);
-        unimplemented!()
+
+        for &pos in self.exploded_cell_positions.iter() {
+            canvas.draw_cell(pos, explosion_cell);
+        }
     }
 }
 

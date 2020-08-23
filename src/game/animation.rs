@@ -5,6 +5,7 @@ mod place_block;
 use super::{BlockQueue, Field};
 use crate::geometry::*;
 use crate::graphics::*;
+pub use explosion::{ChainCounter, Explosion, ExplosionInitResult};
 pub use full_row::FullRow;
 pub use place_block::PlaceBlock;
 
