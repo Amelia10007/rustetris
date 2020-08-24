@@ -78,8 +78,7 @@ impl AnimationFrame {
     /// アニメーションが終了する場合は`None`を返す．
     /// アニメーションがまだ終了しない場合は，次のフレーム`frame`を`Some(frame)`として返す．
     pub fn wait_next(self) -> Option<AnimationFrame> {
-        debug_assert!(self.current <= self.end);
-        if self.current == self.end {
+        if self.current + 1 >= self.end {
             None
         } else {
             std::thread::sleep(std::time::Duration::from_millis(50));
@@ -142,5 +141,36 @@ pub trait Animation: Sized {
             self.draw(drawer.canvas_mut());
             drawer.show();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_animation_frame() {
+        let frame = AnimationFrame::with_frame_count(3);
+        assert_eq!(0, frame.current_frame());
+        assert_eq!(3, frame.end_frame());
+
+        let frame = frame.wait_next().unwrap();
+        assert_eq!(1, frame.current_frame());
+        assert_eq!(3, frame.end_frame());
+
+        let frame = frame.wait_next().unwrap();
+        assert_eq!(2, frame.current_frame());
+        assert_eq!(3, frame.end_frame());
+
+        assert!(frame.wait_next().is_none());
+    }
+
+    #[test]
+    fn test_animation_frame_zero_duration() {
+        let frame = AnimationFrame::with_frame_count(0);
+        assert_eq!(0, frame.current_frame());
+        assert_eq!(0, frame.end_frame());
+
+        assert!(frame.wait_next().is_none());
     }
 }
