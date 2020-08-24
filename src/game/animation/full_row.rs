@@ -1,7 +1,5 @@
 use super::*;
-use crate::data_type::Counter;
 use crate::graphics::Canvas;
-use std::ops::Range;
 
 pub struct FullRow {
     field: AnimationField,
@@ -28,12 +26,12 @@ impl FullRow {
         };
 
         // 一ラインあたりの表示遷移フレーム*揃ったライン数+表示が遷移した後の追加表示フレーム数
-        let max_count = {
+        let max_frame_count = {
             let count_per_line = field.field.width() / 2;
             let additional_count = if filled_row_ys.is_empty() { 0 } else { 5 };
             count_per_line * filled_row_ys.len() + additional_count
         };
-        let frame = AnimationFrame::with_frame_count(max_count);
+        let frame = AnimationFrame::with_frame_count(max_frame_count);
 
         Self {
             field,
@@ -46,7 +44,7 @@ impl FullRow {
 impl Animation for FullRow {
     type Finished = (AnimationField, Vec<PosY>);
 
-    fn wait_next( self) -> AnimationResult<Self, Self::Finished> {
+    fn wait_next(self) -> AnimationResult<Self, Self::Finished> {
         match self.frame.wait_next() {
             Some(next_frame) => AnimationResult::InProgress(Self {
                 frame: next_frame,
@@ -84,7 +82,7 @@ impl Animation for FullRow {
         }
 
         // 横線表示中のライン
-        if let Some(&y) = self.filled_row_ys.get(filled_row_count ) {
+        if let Some(&y) = self.filled_row_ys.get(filled_row_count) {
             for i in 0..filling_cell_count {
                 // 左側
                 let x = PosX::right(i as i8);
