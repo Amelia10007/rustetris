@@ -1,3 +1,4 @@
+mod drop_cell;
 mod explosion;
 mod full_row;
 mod place_block;
@@ -5,6 +6,7 @@ mod place_block;
 use super::{BlockQueue, Field};
 use crate::geometry::*;
 use crate::graphics::*;
+pub use drop_cell::DropCell;
 pub use explosion::{ChainCounter, Explosion, ExplosionInitResult};
 pub use full_row::FullRow;
 pub use place_block::PlaceBlock;

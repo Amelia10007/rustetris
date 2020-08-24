@@ -1,6 +1,6 @@
 use super::animation::{
-    Animation, AnimationField, ChainCounter, Drawer, Explosion, ExplosionInitResult, FullRow,
-    PlaceBlock,
+    Animation, AnimationField, ChainCounter, Drawer, DropCell, Explosion, ExplosionInitResult,
+    FullRow, PlaceBlock,
 };
 use super::field_under_agent_control::FieldUnderAgentControl;
 use super::{BlockQueue, BlockSelector, BlockShape, BombTag, Field};
@@ -73,32 +73,36 @@ where
         // ブロックを設置アニメーション
         let animation_field = AnimationField::new(confirmed_field, confirmed_block_queue);
         let place_block_animation = PlaceBlock::new(animation_field);
-        let finished_animation_field = place_block_animation.execute(drawer);
+        let mut finished_animation_field = place_block_animation.execute(drawer);
 
         let mut explosion_chain = ChainCounter::new();
 
-        // ラインが揃ったアニメーション
-        let full_row_animation = FullRow::new(finished_animation_field, &filled_row_ys);
-        let (finished_animation_field, mut ys) = full_row_animation.execute(drawer);
-        // 必要なら，ラインを消すアニメーション
-        match Explosion::try_init(finished_animation_field, &ys, explosion_chain) {
-            ExplosionInitResult::Explodes(explosion) => {
-                // アニメーション実行
-                let (finished_animation_field, next_chain) = explosion.execute(drawer);
-                // 次の操作のためにフィールドとキューを更新
-                field = finished_animation_field.field;
-                block_queue = finished_animation_field.block_queue;
-                filled_row_ys = vec![];
-                explosion_chain = next_chain;
-            }
-            ExplosionInitResult::Stay(animation_field) => {
-                // 次の操作のためにフィールドとキューを更新
-                field = animation_field.field;
-                block_queue = animation_field.block_queue;
-                filled_row_ys.append(&mut ys);
-                filled_row_ys.sort();
-                filled_row_ys.dedup();
-                explosion_chain = ChainCounter::new();
+        loop {
+            // ラインが揃ったアニメーション
+            let full_row_animation = FullRow::new(finished_animation_field, &filled_row_ys);
+            let (field_after_full_row, mut ys) = full_row_animation.execute(drawer);
+            // 必要なら，ラインを消すアニメーション
+            match Explosion::try_init(field_after_full_row, &ys, explosion_chain) {
+                ExplosionInitResult::Explodes(explosion) => {
+                    // アニメーション実行
+                    let (field_after_explosion, next_chain) = explosion.execute(drawer);
+                    // 爆発後にセルが落ちるアニメーション
+                    let drop_cell = DropCell::new(field_after_explosion);
+                    finished_animation_field = drop_cell.execute(drawer);
+                    // 次の連鎖が起こりうるので，フィールドを更新
+                    filled_row_ys = vec![];
+                    explosion_chain = next_chain;
+                }
+                ExplosionInitResult::Stay(animation_field) => {
+                    // 今回の操作では爆発は起こらない．
+                    // 次の操作のためにフィールドとキューを更新
+                    field = animation_field.field;
+                    block_queue = animation_field.block_queue;
+                    filled_row_ys.append(&mut ys);
+                    filled_row_ys.sort();
+                    filled_row_ys.dedup();
+                    break;
+                }
             }
         }
     }
