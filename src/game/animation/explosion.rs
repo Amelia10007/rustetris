@@ -41,20 +41,27 @@ impl Explosion {
         current_chain: ChainCounter,
     ) -> ExplosionInitResult {
         let filled_row_count = filled_rows.len();
-        let exploded_cell_positions = field
+
+        let mut exploded_cell_positions = vec![];
+        let explosion_center_rows = field
             .field
             .rows()
-            .enumerate()
-            .filter(|(y, _row)| filled_rows.contains(&PosY::below(*y as i8)))
-            .flat_map(move |(y, row)| {
-                row.iter()
-                    .enumerate()
-                    .map(move |(x, &cell)| (Pos::origin() + right(x as i8) + below(y as i8), cell))
-                    .collect::<Vec<_>>()
-            })
-            .filter_map(|(pos, cell)| explosion_area(filled_row_count, &current_chain, cell, pos))
-            .flat_map(|roi| roi.iter_pos())
-            .collect::<Vec<_>>();
+            .filter(|row| filled_rows.contains(&row.y()));
+        for row in explosion_center_rows {
+            let explosion_center_cell_positions = row
+                .cell_refs()
+                .into_iter()
+                .filter_map(|cell_ref| {
+                    explosion_area(
+                        filled_row_count,
+                        &current_chain,
+                        *cell_ref.cell(),
+                        cell_ref.pos(),
+                    )
+                })
+                .flat_map(|roi| roi.iter_pos());
+            exploded_cell_positions.extend(explosion_center_cell_positions);
+        }
 
         if exploded_cell_positions.is_empty() {
             ExplosionInitResult::Stay(field)

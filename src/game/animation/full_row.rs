@@ -12,10 +12,8 @@ impl FullRow {
         let filled_row_ys = field
             .field
             .rows()
-            .enumerate()
-            .map(|(y, row)| (PosY::below(y as i8), row))
-            .filter(|(_y, row)| row.iter().all(|cell| !cell.is_empty()))
-            .map(|(y, _row)| y)
+            .filter(|row| row.iter().all(|cell| !cell.is_empty()))
+            .map(|row| row.y())
             .collect::<Vec<_>>();
 
         // 揃ったラインが以前とまったく同一だった場合はアニメーションを表示しない．

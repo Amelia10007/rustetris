@@ -108,6 +108,19 @@ impl<'f> FieldRow<'f> {
         PosY::origin() + below(self.y_index as i8)
     }
 
+    pub const fn width(&self) -> usize {
+        self.field.width()
+    }
+
+    pub fn cell_refs(&self) -> impl IntoIterator<Item = FieldCellRef<'_>> + '_ {
+        let y = self.y();
+        self.iter()
+            .enumerate()
+            .map(|(x, cell)| (PosX::right(x as i8), cell))
+            .map(move |(x, cell)| (Pos(x, y), cell))
+            .map(|(pos, cell)| FieldCellRef::new(cell, pos))
+    }
+
     fn from_y_index(field: &'f Field, y_index: usize) -> FieldRow<'f> {
         debug_assert!(y_index < HEIGHT);
         Self { field, y_index }
@@ -152,6 +165,26 @@ impl Deref for FieldRowMut<'_> {
 impl DerefMut for FieldRowMut<'_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.field.cells[self.y_index]
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FieldCellRef<'c> {
+    cell: &'c Cell,
+    pos: Pos,
+}
+
+impl<'c> FieldCellRef<'c> {
+    const fn new(cell: &'c Cell, pos: Pos) -> FieldCellRef<'c> {
+        Self { cell, pos }
+    }
+
+    pub const fn cell(&self) -> &Cell {
+        self.cell
+    }
+
+    pub const fn pos(&self) -> Pos {
+        self.pos
     }
 }
 
