@@ -1,6 +1,6 @@
 use super::animation::{
-    Animation, AnimationField, ChainCounter, Drawer, DropCell, Explosion, ExplosionInitResult,
-    FullRow, PlaceBlock,
+    Animation, AnimationField, ChainCounter, ConnectBomb, ConnectBombInitResult, Drawer, DropCell,
+    Explosion, ExplosionInitResult, FullRow, PlaceBlock,
 };
 use super::field_under_agent_control::FieldUnderAgentControl;
 use super::{BlockQueue, BlockSelector, BlockShape, BombTag, Field};
@@ -74,10 +74,10 @@ where
         let animation_field = AnimationField::new(confirmed_field, confirmed_block_queue);
         let place_block_animation = PlaceBlock::new(animation_field);
         let mut finished_animation_field = place_block_animation.execute(drawer);
-
+        // 爆発の連鎖数をカウント
         let mut explosion_chain = ChainCounter::new();
 
-        loop {
+        let finished_animation_field = loop {
             // ラインが揃ったアニメーション
             let full_row_animation = FullRow::new(finished_animation_field, &filled_row_ys);
             let (field_after_full_row, mut ys) = full_row_animation.execute(drawer);
@@ -96,14 +96,21 @@ where
                 ExplosionInitResult::Stay(animation_field) => {
                     // 今回の操作では爆発は起こらない．
                     // 次の操作のためにフィールドとキューを更新
-                    field = animation_field.field;
-                    block_queue = animation_field.block_queue;
                     filled_row_ys.append(&mut ys);
                     filled_row_ys.sort();
                     filled_row_ys.dedup();
-                    break;
+                    break animation_field;
                 }
             }
-        }
+        };
+
+        // ここまで来たら，ブロックの設置，爆発，落下はひととおり終わっている．
+        // 最後にデカボム生成
+        let finished_animation_field = match ConnectBomb::new(finished_animation_field) {
+            ConnectBombInitResult::Connects(connect_bomb) => connect_bomb.execute(drawer),
+            ConnectBombInitResult::Stay(animation_field) => animation_field,
+        };
+        field = finished_animation_field.field;
+        block_queue = finished_animation_field.block_queue;
     }
 }

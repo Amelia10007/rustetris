@@ -178,7 +178,11 @@ impl ExplosionPower {
 }
 
 fn is_explodable(cell: Cell) -> bool {
-    matches!(cell, Cell::Bomb | Cell::BigBombUpperLeft)
+    use Cell::*;
+    matches!(
+        cell,
+        Bomb | BigBombUpperLeft | BigBombUpperRight | BigBombLowerLeft | BigBombLowerRight
+    )
 }
 
 fn explosion_area(
@@ -216,7 +220,7 @@ fn bomb_explosion_area(explosion_power: ExplosionPower, pos: Pos) -> RegionOfInt
 
 fn big_bomb_explosion_area(big_bomb_upper_left_pos: Pos) -> RegionOfInterest {
     let left_top = big_bomb_upper_left_pos + left(4) + above(4);
-    let size = Movement(right(10), below(10));
+    let size = Movement(right(9), below(9));
     RegionOfInterest::new(left_top, size)
 }
 

@@ -1,3 +1,4 @@
+mod connect_bomb;
 mod drop_cell;
 mod explosion;
 mod full_row;
@@ -6,6 +7,7 @@ mod place_block;
 use super::{BlockQueue, Field};
 use crate::geometry::*;
 use crate::graphics::*;
+pub use connect_bomb::{ConnectBomb, ConnectBombInitResult};
 pub use drop_cell::DropCell;
 pub use explosion::{ChainCounter, Explosion, ExplosionInitResult};
 pub use full_row::FullRow;
