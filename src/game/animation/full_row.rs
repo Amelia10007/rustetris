@@ -84,13 +84,13 @@ impl Animation for FullRow {
         // 横線表示中のライン
         if let Some(&y) = self.filled_row_ys.get(filled_row_count) {
             for i in 0..filling_cell_count {
-                // 左側
-                let x = PosX::right(i as i8);
-                let pos = Pos(x, y);
                 let colored_str = {
                     let color = CanvasCellColor::new(Color::White, Color::Black);
                     ColoredStr("--", color)
                 };
+                // 左側
+                let x = PosX::right(i as i8);
+                let pos = Pos(x, y);
                 colored_str.draw_on_child(pos, canvas);
                 // 右側
                 let x = PosX::right((self.field.field.width() - i - 1) as i8);
