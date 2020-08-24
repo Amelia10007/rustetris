@@ -40,9 +40,10 @@ impl Cell {
             Empty => SquareChar::new(' ', '.'),
             Normal => SquareChar::new('[', ']'),
             Bomb => SquareChar::new('[', ']'),
-            BigBombUpperLeft | BigBombUpperRight | BigBombLowerLeft | BigBombLowerRight => {
-                SquareChar::new('=', '=')
-            }
+            BigBombUpperLeft => SquareChar::new('/', '^'),
+            BigBombUpperRight => SquareChar::new('^', '\\'),
+            BigBombLowerLeft => SquareChar::new('\\', '_'),
+            BigBombLowerRight => SquareChar::new('_', '/'),
         }
     }
 
@@ -55,7 +56,7 @@ impl Cell {
             Normal => CanvasCellColor::new(Cyan, Black),
             Bomb => CanvasCellColor::new(Red, Black),
             BigBombUpperLeft | BigBombUpperRight | BigBombLowerLeft | BigBombLowerRight => {
-                CanvasCellColor::new(White, Red)
+                CanvasCellColor::new(Magenta, Black)
             }
         }
     }
