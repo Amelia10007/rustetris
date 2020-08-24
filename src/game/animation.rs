@@ -49,6 +49,7 @@ impl Drawable for AnimationField {
 }
 
 /// アニメーションにおけるフレームを表し，アニメーションの遷移や終了タイミングを制御する．
+#[derive(Clone)]
 pub struct AnimationFrame {
     /// 現在のフレームカウント．
     current: usize,
