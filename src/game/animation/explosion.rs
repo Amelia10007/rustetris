@@ -221,7 +221,7 @@ fn big_bomb_explosion_area(big_bomb_upper_left_pos: Pos) -> RegionOfInterest {
 }
 
 const fn animation_frame() -> AnimationFrame {
-    AnimationFrame::with_frame_count(20)
+    AnimationFrame::with_frame_count(10)
 }
 
 fn scan_exploded_cell_positions(
