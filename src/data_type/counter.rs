@@ -33,13 +33,15 @@ where
         !self.range.contains(&next)
     }
 
-    pub fn next(&mut self) -> Option<()> {
+    pub fn next(self) -> Self {
         let next = self.current + T::one();
         if self.range.contains(&next) {
-            self.current = next;
-            Some(())
+            Self {
+                current: next,
+                ..self
+            }
         } else {
-            None
+            self
         }
     }
 }
@@ -54,15 +56,15 @@ mod tests {
         assert_eq!(1, counter.current());
         assert!(!counter.is_ended());
 
-        assert!(counter.next().is_some());
+        counter = counter.next();
         assert_eq!(2, counter.current());
         assert!(!counter.is_ended());
 
-        assert!(counter.next().is_some());
+        counter = counter.next();
         assert_eq!(3, counter.current());
         assert!(counter.is_ended());
 
-        assert!(counter.next().is_none());
+        counter = counter.next();
         assert_eq!(3, counter.current());
         assert!(counter.is_ended());
     }
@@ -73,15 +75,15 @@ mod tests {
         assert_eq!(1, counter.current());
         assert!(!counter.is_ended());
 
-        assert!(counter.next().is_some());
+        counter = counter.next();
         assert_eq!(2, counter.current());
         assert!(!counter.is_ended());
 
-        assert!(counter.next().is_some());
+        counter = counter.next();
         assert_eq!(3, counter.current());
         assert!(counter.is_ended());
 
-        assert!(counter.next().is_none());
+        counter = counter.next();
         assert_eq!(3, counter.current());
         assert!(counter.is_ended());
     }
