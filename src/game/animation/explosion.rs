@@ -17,8 +17,8 @@ impl ChainCounter {
         self.0.current()
     }
 
-    pub fn next(&mut self) {
-        self.0.next().expect("chain must not have upper limit");
+    pub fn next(self) -> Self {
+        Self(self.0.next())
     }
 }
 
@@ -80,14 +80,13 @@ impl Animation for Explosion {
                 ..self
             }),
             None => {
-                self.current_chain.next();
                 // 爆発に巻き込まれたセルは空セルになる
                 for exploded_pos in self.exploded_cell_positions.into_iter() {
                     if let Some(c) = self.field.field.get_mut(exploded_pos) {
                         *c = Cell::Empty;
                     }
                 }
-                AnimationResult::Finished((self.field, self.current_chain))
+                AnimationResult::Finished((self.field, self.current_chain.next()))
             }
         }
     }

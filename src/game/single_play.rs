@@ -44,7 +44,6 @@ where
     let mut field = Field::empty();
     let mut block_queue = BlockQueue::new(&mut block_generator);
     let mut filled_row_ys = vec![];
-    let mut explosion_chain = ChainCounter::new();
 
     loop {
         let mut agent_field =
@@ -75,6 +74,9 @@ where
         let animation_field = AnimationField::new(confirmed_field, confirmed_block_queue);
         let place_block_animation = PlaceBlock::new(animation_field);
         let finished_animation_field = place_block_animation.execute(drawer);
+
+        let mut explosion_chain = ChainCounter::new();
+
         // ラインが揃ったアニメーション
         let full_row_animation = FullRow::new(finished_animation_field, &filled_row_ys);
         let (finished_animation_field, mut ys) = full_row_animation.execute(drawer);

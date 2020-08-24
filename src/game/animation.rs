@@ -61,7 +61,7 @@ impl AnimationFrame {
     }
 
     /// 現在の経過フレーム数を返す．
-    pub fn current_frame(&self) -> usize {
+    pub const fn current_frame(&self) -> usize {
         self.current
     }
 
